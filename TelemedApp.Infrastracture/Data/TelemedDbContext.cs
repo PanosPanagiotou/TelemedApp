@@ -7,6 +7,7 @@ namespace TelemedApp.Infrastracture.Data
     public class TelemedDbContext(DbContextOptions<TelemedDbContext> options) : DbContext(options)
     {
         public DbSet<Patient> Patients => Set<Patient>();
+        public DbSet<Appointment> Appointments => Set<Appointment>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
