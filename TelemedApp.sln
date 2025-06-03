@@ -13,6 +13,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.Identity", "Tele
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.Infrastracture", "TelemedApp.Infrastracture\TelemedApp.Infrastracture.csproj", "{7737F914-E9BE-210B-1D3E-17EAD96BF52C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.UI.Client", "TelemedApp.UI\Client\TelemedApp.UI.Client.csproj", "{09C02084-0E79-BA86-F0B0-18C197792551}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.UI.Server", "TelemedApp.UI\Server\TelemedApp.UI.Server.csproj", "{D2E148C1-5776-772D-BF2C-0C40C5199A0D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.UI.Shared", "TelemedApp.UI\Shared\TelemedApp.UI.Shared.csproj", "{5EFA906D-8496-17FB-B972-8068E591DFE8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +45,18 @@ Global
 		{7737F914-E9BE-210B-1D3E-17EAD96BF52C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7737F914-E9BE-210B-1D3E-17EAD96BF52C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7737F914-E9BE-210B-1D3E-17EAD96BF52C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09C02084-0E79-BA86-F0B0-18C197792551}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09C02084-0E79-BA86-F0B0-18C197792551}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09C02084-0E79-BA86-F0B0-18C197792551}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09C02084-0E79-BA86-F0B0-18C197792551}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2E148C1-5776-772D-BF2C-0C40C5199A0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2E148C1-5776-772D-BF2C-0C40C5199A0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2E148C1-5776-772D-BF2C-0C40C5199A0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2E148C1-5776-772D-BF2C-0C40C5199A0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EFA906D-8496-17FB-B972-8068E591DFE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EFA906D-8496-17FB-B972-8068E591DFE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EFA906D-8496-17FB-B972-8068E591DFE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EFA906D-8496-17FB-B972-8068E591DFE8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
