@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TelemedApp.Application\TelemedApp.Application.csproj" />
     <ProjectReference Include="..\TelemedApp.Identity\TelemedApp.Identity.csproj" />
     <ProjectReference Include="..\TelemedApp.Infrastracture\TelemedApp.Infrastracture.csproj" />
   </ItemGroup>
