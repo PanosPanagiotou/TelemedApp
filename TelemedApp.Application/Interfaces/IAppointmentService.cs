@@ -12,6 +12,6 @@ namespace TelemedApp.Application.Interfaces
         Task<Appointment> CreateAppointmentAsync(Appointment appointment);
         Task<IEnumerable<Appointment>> GetAppointmentsAsync(Guid? doctorId = null, Guid? patientId = null);
         Task<bool> CancelAppointmentAsync(Guid appointmentId);
-        // Add update, delete as needed
+        Task<Appointment> RescheduleAppointmentAsync(Appointment appointment);
     }
 }

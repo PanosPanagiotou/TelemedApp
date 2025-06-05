@@ -9,7 +9,14 @@ namespace TelemedApp.Application.Mappings
         public MappingProfile()
         {
             CreateMap<Patient, PatientDto>().ReverseMap();
-            // Add other mappings as needed
+
+            CreateMap<Appointment, AppointmentDto>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ReverseMap();
+
+            CreateMap<Doctor, DoctorDto>().ReverseMap();
+            CreateMap<MedicalRecord, MedicalRecordDto>().ReverseMap();
+            CreateMap<Prescription, PrescriptionDto>().ReverseMap();
         }
     }
 }

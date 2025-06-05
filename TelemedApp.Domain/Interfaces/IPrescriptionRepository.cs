@@ -2,5 +2,5 @@
 
 namespace TelemedApp.Domain.Interfaces
 {
-    public interface IPatientRepository : IRepository<Patient> { }
+    public interface IPrescriptionRepository : IRepository<Prescription> { }
 }
