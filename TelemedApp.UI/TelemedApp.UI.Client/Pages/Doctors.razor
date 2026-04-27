@@ -1,0 +1,419 @@
+﻿@page "/doctors"
+@using TelemedApp.Application.DTOs
+@using TelemedApp.Domain.Enums
+@using TelemedApp.UI.Client.Shared.Components.Cards
+@using TelemedApp.UI.Client.Shared.Components.Metrics
+@using TelemedApp.UI.Client.Models
+@using TelemedApp.UI.Client.Services
+@inject DoctorsService DoctorsService
+@inject PermissionGuard Permission
+
+<DashboardPage Header="@DoctorsHeader">
+
+    @if (!Permission.Has("Doctors.View"))
+    {
+        <div class="text-lg font-semibold text-red-600 dark:text-red-400">
+            You do not have permission to view doctors.
+        </div>
+        @* Stop rendering the page *@
+        return;
+    }
+
+    <!-- Filters -->
+    <Card Variant="default" CssClass="mb-12">
+        <CardBody Variant="loose">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+                <Input Label="Search" @bind-Value="Search" />
+
+                <Select Label="Specialty"
+                        Value="@SpecialtyFilter"
+                        ValueChanged="v => SpecialtyFilter = v"
+                        Options="SpecialtyOptions" />
+
+                <div class="flex items-end">
+                    @if (Permission.Has("Doctors.Create"))
+                    {
+                        <Button Variant="primary" OnClick="() => OpenAddModal()" CssClass="w-full">
+                            Add Doctor
+                        </Button>
+                    }
+                </div>
+
+            </div>
+        </CardBody>
+    </Card>
+
+    <!-- Table -->
+    <Card Variant="default" CssClass="mb-16">
+        <CardBody Variant="loose">
+
+            @if (IsLoading)
+            {
+                <div class="text-gray-500 dark:text-gray-400">Loading doctors...</div>
+            }
+            else
+            {
+                <Table>
+
+                    <ChildHeader>
+                        <tr>
+                            <th class="cursor-pointer" @onclick="@(() => SortBy("FullName"))">
+                                Name @SortIcon("FullName")
+                            </th>
+
+                            <th class="cursor-pointer" @onclick="@(() => SortBy("Specialty"))">
+                                Specialty @SortIcon("Specialty")
+                            </th>
+
+                            <th>Email</th>
+
+                            <th class="cursor-pointer" @onclick="@(() => SortBy("Status"))">
+                                Status @SortIcon("Status")
+                            </th>
+
+                            <th class="text-right"></th>
+                        </tr>
+                    </ChildHeader>
+
+                    <ChildRows>
+                        @foreach (var d in PagedDoctors)
+                        {
+                            <tr tabindex="0"
+                                class="rounded-lg transition-all hover:bg-gray-50 focus:ring-2 focus:ring-blue-300 dark:hover:bg-gray-800">
+
+                                <td class="px-4 py-3 font-medium">@d.FullName</td>
+
+                                <td class="px-4 py-3">
+                                    <Badge Variant="info">@d.Specialty</Badge>
+                                </td>
+
+                                <td class="px-4 py-3">@d.Email</td>
+
+                                <td class="px-4 py-3">
+                                    @if (d.Status == DoctorStatus.Active)
+                                    {
+                                        <Badge Variant="success">Active</Badge>
+                                    }
+                                    else
+                                    {
+                                        <Badge Variant="outline">Inactive</Badge>
+                                    }
+                                </td>
+
+                                <td class="flex justify-end gap-2 px-4 py-3 text-right">
+
+                                    @if (Permission.Has("Doctors.Edit"))
+                                    {
+                                        <Button OnClick="() => Edit(d)">Edit</Button>
+                                    }
+
+                                    @if (Permission.Has("Doctors.Delete"))
+                                    {
+                                        <Button Variant="danger" OnClick="() => Delete(d.Id)">Delete</Button>
+                                    }
+
+                                </td>
+
+                            </tr>
+                        }
+                    </ChildRows>
+
+                </Table>
+
+                <!-- Pagination -->
+                <div class="mt-6 flex items-center justify-between">
+
+                    <!-- Page size -->
+                    <div class="flex items-center gap-2 text-sm">
+                        <span>Rows per page:</span>
+                        <select class="rounded border px-2 py-1 dark:bg-gray-800"
+                                @bind="PageSize"
+                                @bind:after="() => Page = 1">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+
+                    <!-- Page navigation -->
+                    <div class="flex items-center gap-2">
+
+                        <Button Disabled="@(Page == 1)"
+                                OnClick="() => Page--">
+                            Prev
+                        </Button>
+
+                        <span class="text-sm">
+                            Page @Page of @TotalPages
+                        </span>
+
+                        <Button Disabled="@(Page == TotalPages)"
+                                OnClick="() => Page++">
+                            Next
+                        </Button>
+
+                    </div>
+
+                </div>
+            }
+
+        </CardBody>
+    </Card>
+
+    <!-- Modal -->
+    @if (ShowAddModal)
+    {
+        @if ((Model.Id == Guid.Empty && Permission.Has("Doctors.Create")) ||
+            (Model.Id != Guid.Empty && Permission.Has("Doctors.Edit")))
+        {
+            <Modal Title="@ModalTitle"
+                   OnClose="CloseModal"
+                   OnConfirm="Save"
+                   DisableConfirm="@(Errors.Count > 0)">
+
+                <div class="space-y-4">
+
+                    <!-- Full Name -->
+                    <Input Label="Full Name"
+                           @bind-Value="Model.FullName"
+                           CssClass="@(Errors.ContainsKey("FullName") ? "border-red-500" : "")" />
+                    @if (Errors.ContainsKey("FullName"))
+                    {
+                        <div class="text-sm text-red-500">@Errors["FullName"]</div>
+                    }
+
+                    <!-- Email -->
+                    <Input Label="Email"
+                           @bind-Value="Model.Email"
+                           CssClass="@(Errors.ContainsKey("Email") ? "border-red-500" : "")" />
+                    @if (Errors.ContainsKey("Email"))
+                    {
+                        <div class="text-sm text-red-500">@Errors["Email"]</div>
+                    }
+
+                    <!-- Specialty -->
+                    <Select Label="Specialty"
+                            @bind-Value="Model.Specialty"
+                            CssClass="@(Errors.ContainsKey("Specialty") ? "border-red-500" : "")">
+                        <option>Cardiology</option>
+                        <option>Dermatology</option>
+                        <option>General Medicine</option>
+                        <option>Neurology</option>
+                    </Select>
+                    @if (Errors.ContainsKey("Specialty"))
+                    {
+                        <div class="text-sm text-red-500">@Errors["Specialty"]</div>
+                    }
+
+                    <!-- Status -->
+                    <select class="w-full rounded border px-3 py-2 text-sm"
+                            @bind="Model.Status">
+                        <option value="@DoctorStatus.Active">Active</option>
+                        <option value="@DoctorStatus.Inactive">Inactive</option>
+                    </select>
+                    @if (Errors.ContainsKey("Status"))
+                    {
+                        <div class="text-sm text-red-500">@Errors["Status"]</div>
+                    }
+                </div>
+
+            </Modal>
+        }
+    }
+
+</DashboardPage>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    RenderFragment DoctorsHeader => @<DashboardHeader Title="Doctors"
+                     Subtitle="Manage active, inactive, and specialized medical staff"
+                     Icon="fa-solid fa-user-doctor" />;
+
+    // Data
+    List<DoctorDto> DoctorList = new();
+    DoctorDto Model = new();
+    bool IsLoading = true;
+
+    // Filters
+    string Search = "";
+    string SpecialtyFilter = "";
+
+    List<SelectOption> SpecialtyOptions = new()
+    {
+        new("", "All Specialties"),
+        new("Cardiology", "Cardiology"),
+        new("Dermatology", "Dermatology"),
+        new("General Medicine", "General Medicine"),
+        new("Neurology", "Neurology")
+    };
+
+    // Sorting
+    string SortColumn = "FullName";
+    bool SortAscending = true;
+
+    IEnumerable<DoctorDto> SortedDoctors =>
+        SortColumn switch
+        {
+            "FullName" => SortAscending
+                ? DoctorList.OrderBy(d => d.FullName)
+                : DoctorList.OrderByDescending(d => d.FullName),
+
+            "Specialty" => SortAscending
+                ? DoctorList.OrderBy(d => d.Specialty)
+                : DoctorList.OrderByDescending(d => d.Specialty),
+
+            "Status" => SortAscending
+                ? DoctorList.OrderBy(d => d.Status)
+                : DoctorList.OrderByDescending(d => d.Status),
+
+            _ => DoctorList
+        };
+
+    IEnumerable<DoctorDto> FilteredDoctors =>
+        SortedDoctors.Where(d =>
+            (string.IsNullOrWhiteSpace(Search) || d.FullName.Contains(Search, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(SpecialtyFilter) || d.Specialty == SpecialtyFilter));
+
+    // Pagination
+    int Page = 1;
+    int PageSize = 10;
+
+    int TotalPages => (int)Math.Ceiling(FilteredDoctors.Count() / (double)PageSize);
+
+    IEnumerable<DoctorDto> PagedDoctors =>
+        FilteredDoctors
+            .Skip((Page - 1) * PageSize)
+            .Take(PageSize);
+
+    // Validation
+    Dictionary<string, string> Errors = new();
+
+    bool Validate()
+    {
+        Errors.Clear();
+
+        if (string.IsNullOrWhiteSpace(Model.FullName))
+            Errors["FullName"] = "Full name is required.";
+
+        if (string.IsNullOrWhiteSpace(Model.Email))
+            Errors["Email"] = "Email is required.";
+        else if (!Model.Email.Contains("@"))
+            Errors["Email"] = "Invalid email format.";
+
+        if (string.IsNullOrWhiteSpace(Model.Specialty))
+            Errors["Specialty"] = "Specialty is required.";
+
+        if (!Enum.IsDefined(typeof(DoctorStatus), Model.Status))
+            Errors["Status"] = "Invalid status.";
+
+        return Errors.Count == 0;
+    }
+
+    // Load from API
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+
+        var result = await DoctorsService.GetAll();
+        DoctorList = result?.ToList() ?? new();
+
+        IsLoading = false;
+    }
+
+    // Actions
+    void SortBy(string column)
+    {
+        if (SortColumn == column)
+            SortAscending = !SortAscending;
+        else
+        {
+            SortColumn = column;
+            SortAscending = true;
+        }
+
+        Page = 1;
+    }
+
+    void OpenAddModal()
+    {
+        Model = new DoctorDto();
+        ModalTitle = "Add Doctor";
+        ShowAddModal = true;
+    }
+
+    void Edit(DoctorDto d)
+    {
+        Model = new DoctorDto
+        {
+            Id = d.Id,
+            FullName = d.FullName,
+            Specialty = d.Specialty,
+            Email = d.Email,
+            Status = d.Status
+        };
+
+        ModalTitle = "Edit Doctor";
+        ShowAddModal = true;
+    }
+
+    async Task Save()
+    {
+        if (!Validate())
+            return;
+
+        if (Model.Id == Guid.Empty)
+        {
+            if (!Permission.Has("Doctors.Create"))
+                return;
+
+            var created = await DoctorsService.Create(Model);
+            if (created != null)
+                DoctorList.Add(created);
+        }
+        else
+        {
+            if (!Permission.Has("Doctors.Edit"))
+                return;
+
+            await DoctorsService.Update(Model);
+
+            var existing = DoctorList.First(x => x.Id == Model.Id);
+            existing.FullName = Model.FullName;
+            existing.Specialty = Model.Specialty;
+            existing.Email = Model.Email;
+            existing.Status = Model.Status;
+        }
+
+        CloseModal();
+    }
+
+    async Task Delete(Guid id)
+    {
+        if (!Permission.Has("Doctors.Delete"))
+            return;
+
+        await DoctorsService.Delete(id);
+        DoctorList.RemoveAll(d => d.Id == id);
+    }
+
+    bool ShowAddModal = false;
+    string ModalTitle = "Add Doctor";
+
+    void CloseModal() => ShowAddModal = false;
+
+    RenderFragment SortIcon(string column) => @<span>
+@if (SortColumn == column)
+    {
+    if (SortAscending)
+    {
+    <i class="fa-solid fa-arrow-up ml-1 text-gray-400"></i>
+    }
+    else
+{
+        <i class="fa-solid fa-arrow-down ml-1 text-gray-400"></i>
+}
+    }
+</span>;
+}

@@ -1,0 +1,95 @@
+﻿<span class="@BuildClasses()" @onclick="HandleClick">
+    @ChildContent
+</span>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public string Variant { get; set; } = "gray";
+    [Parameter] public string Tone { get; set; } = "soft";
+    [Parameter] public string Size { get; set; } = "md";
+    [Parameter] public string Rounded { get; set; } = "full";
+    [Parameter] public bool HoverEffect { get; set; } = false;
+    [Parameter] public bool Shadow { get; set; } = false;
+    [Parameter] public bool Gradient { get; set; } = false;
+    [Parameter] public bool Clickable { get; set; } = false;
+
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (Clickable)
+            await OnClick.InvokeAsync();
+    }
+
+    private string BuildClasses()
+    {
+        var baseClass =
+            "inline-flex items-center font-medium select-none whitespace-nowrap transition";
+
+        var sizeClass = Size switch
+        {
+            "sm" => "px-2 py-0.5 text-xs",
+            "lg" => "px-4 py-1.5 text-base",
+            _ => "px-3 py-1 text-sm"
+        };
+
+        var roundedClass = Rounded switch
+        {
+            "md" => "rounded-md",
+            "lg" => "rounded-lg",
+            _ => "rounded-full"
+        };
+
+        var toneClass = GetToneClass();
+        var hoverClass = HoverEffect ? "hover:brightness-110" : "";
+        var shadowClass = Shadow ? "shadow-sm dark:shadow-gray-900/40" : "";
+        var gradientClass = Gradient ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white" : "";
+        var clickableClass = Clickable ? "cursor-pointer active:scale-[0.97]" : "";
+
+        return $"{baseClass} {sizeClass} {roundedClass} {toneClass} {hoverClass} {shadowClass} {gradientClass} {clickableClass}".Trim();
+    }
+
+    private string GetToneClass()
+    {
+        return (Variant, Tone, IsDark) switch
+        {
+            ("success", "solid", _) => "bg-green-600 text-white",
+            ("success", "soft", false) => "bg-green-100 text-green-800",
+            ("success", "soft", true) => "bg-green-800 text-green-100",
+            ("success", "subtle", false) => "bg-green-50 text-green-700",
+            ("success", "subtle", true) => "bg-green-900 text-green-200",
+
+            ("danger", "solid", _) => "bg-red-600 text-white",
+            ("danger", "soft", false) => "bg-red-100 text-red-800",
+            ("danger", "soft", true) => "bg-red-800 text-red-100",
+            ("danger", "subtle", false) => "bg-red-50 text-red-700",
+            ("danger", "subtle", true) => "bg-red-900 text-red-200",
+
+            ("warning", "solid", _) => "bg-yellow-500 text-black",
+            ("warning", "soft", false) => "bg-yellow-100 text-yellow-800",
+            ("warning", "soft", true) => "bg-yellow-700 text-yellow-100",
+            ("warning", "subtle", false) => "bg-yellow-50 text-yellow-700",
+            ("warning", "subtle", true) => "bg-yellow-900 text-yellow-200",
+
+            ("info", "solid", _) => "bg-blue-600 text-white",
+            ("info", "soft", false) => "bg-blue-100 text-blue-800",
+            ("info", "soft", true) => "bg-blue-800 text-blue-100",
+            ("info", "subtle", false) => "bg-blue-50 text-blue-700",
+            ("info", "subtle", true) => "bg-blue-900 text-blue-200",
+
+            ("accent", "solid", _) => "bg-purple-600 text-white",
+            ("accent", "soft", false) => "bg-purple-100 text-purple-800",
+            ("accent", "soft", true) => "bg-purple-800 text-purple-100",
+            ("accent", "subtle", false) => "bg-purple-50 text-purple-700",
+            ("accent", "subtle", true) => "bg-purple-900 text-purple-200",
+
+            ("outline", _, false) => "border border-gray-400 text-gray-700",
+            ("outline", _, true) => "border border-gray-600 text-gray-200",
+
+            _ => IsDark ? "bg-gray-700 text-gray-100" : "bg-gray-200 text-gray-800"
+        };
+    }
+}

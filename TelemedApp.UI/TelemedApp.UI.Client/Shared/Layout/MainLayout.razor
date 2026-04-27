@@ -1,0 +1,224 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Layout
+@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using TelemedApp.UI.Client.Services
+@using TelemedApp.UI.Client.Auth
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject AuthService Auth
+@inject AuthenticationStateProvider AuthStateProviderBase
+@inject PermissionGuard Permission
+
+<CascadingAuthenticationState>
+    <div class="@RootClasses h-screen overflow-y-auto">
+
+        <!-- Sidebar (Desktop) -->
+        <aside class="z-0 hidden w-64 shrink-0 flex-col border-r transition-colors duration-300 md:flex
+                 @(isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200")">
+
+            <div class="p-6 text-xl font-semibold tracking-tight
+                    @(isDark ? "text-gray-100" : "text-gray-900")">
+                TelemedApp
+            </div>
+
+            <nav class="flex-1 space-y-1 px-4 py-2">
+
+                @NavLink("/", "Home", "fa-solid fa-house")
+                @NavLink("/dashboard", "Dashboard", "fa-solid fa-chart-line")
+
+                @if (Permission.Has("Patients.View"))
+                {
+                    @NavLink("/patients", "Patients", "fa-solid fa-users")
+                }
+
+                @if (Permission.Has("Doctors.View"))
+                {
+                    @NavLink("/doctors", "Doctors", "fa-solid fa-user-doctor")
+                }
+
+                @if (Permission.Has("Admin.Access"))
+                {
+                    @NavLink("/admin", "Admin Panel", "fa-solid fa-user-shield")
+                }
+
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <div class="px-3 py-2 text-sm text-gray-500">
+                            Please login to access features.
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+
+            </nav>
+        </aside>
+
+        <!-- Mobile Sidebar Overlay -->
+        @if (isMobileMenuOpen)
+        {
+            <div class="pointer-events-auto fixed inset-0 z-40 bg-black/40" @onclick="ToggleMobileMenu"></div>
+        }
+        else
+        {
+            <div class="pointer-events-none fixed inset-0 -z-10 opacity-0"></div>
+        }
+
+        <!-- Sidebar (Mobile) -->
+        <aside class="@MobileSidebarClasses">
+            <div class="flex items-center justify-between border-b p-6
+                    @(isDark ? "border-gray-700 text-gray-100" : "border-gray-200 text-gray-900")">
+                <span class="text-xl font-semibold tracking-tight">TelemedApp</span>
+                <button @onclick="ToggleMobileMenu" class="text-xl">✕</button>
+            </div>
+
+            <nav class="flex-1 space-y-1 px-4 py-2">
+
+                @NavLink("/", "Home", "fa-solid fa-house", true)
+                @NavLink("/dashboard", "Dashboard", "fa-solid fa-chart-line", true)
+
+                @if (Permission.Has("Patients.View"))
+                {
+                    @NavLink("/patients", "Patients", "fa-solid fa-users", true)
+                }
+
+                @if (Permission.Has("Doctors.View"))
+                {
+                    @NavLink("/doctors", "Doctors", "fa-solid fa-user-doctor", true)
+                }
+
+                @if (Permission.Has("Admin.Access"))
+                {
+                    @NavLink("/admin", "Admin Panel", "fa-solid fa-user-shield", true)
+                }
+
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <div class="px-3 py-2 text-sm text-gray-500">
+                            Please login to access features.
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="relative z-10 flex flex-1 flex-col">
+
+            <!-- Top Bar -->
+            <header class="flex h-14 items-center gap-4 border-b px-6 transition-colors duration-300
+                       @(isDark ? "bg-gray-900 border-gray-800 text-gray-100" : "bg-white border-gray-200 text-gray-900")">
+
+                <button class="text-2xl md:hidden" @onclick="ToggleMobileMenu">☰</button>
+
+                <h1 class="text-lg font-medium tracking-tight">@pageTitle</h1>
+
+                <button @onclick="ToggleDarkMode" class="mr-4 ml-auto text-xl">
+                    🌓
+                </button>
+
+                <AuthorizeView>
+                    <Authorized>
+                        <button @onclick="Logout"
+                                class="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700">
+                            Logout
+                        </button>
+                    </Authorized>
+
+                    <NotAuthorized>
+                        <a href="/login"
+                           class="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700">
+                            Login
+                        </a>
+                        <a href="/register"
+                           class="ml-2 rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700">
+                            Register
+                        </a>
+                    </NotAuthorized>
+                </AuthorizeView>
+
+            </header>
+
+            <!-- Page Body -->
+            <main class="relative z-50 flex-1 p-6 transition-colors duration-300">
+                <CascadingValue Value="isDark">
+                    @Body
+                </CascadingValue>
+            </main>
+
+        </div>
+
+    </div>
+</CascadingAuthenticationState>
+
+@code {
+    private CustomAuthStateProvider AuthStateProvider =>
+        (CustomAuthStateProvider)AuthStateProviderBase;
+
+    private bool isMobileMenuOpen = false;
+    private string pageTitle = "Dashboard";
+    private bool isDark = false;
+
+    private string RootClasses =>
+        (isDark ? "dark " : "") +
+        "flex min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100";
+
+    private string MobileSidebarClasses =>
+        $"fixed inset-y-0 left-0 w-64 transform transition-transform duration-300 md:hidden " +
+        $"{(isMobileMenuOpen ? "translate-x-0 z-50 pointer-events-auto" : "-translate-x-full -z-10 pointer-events-none")} " +
+        $"{(isDark ? "bg-gray-900" : "bg-white")} shadow-lg";
+
+    private void ToggleMobileMenu() => isMobileMenuOpen = !isMobileMenuOpen;
+
+    private async Task Logout()
+    {
+        await AuthStateProvider.Logout();
+        NavigationManager.NavigateTo("/login", true);
+    }
+
+    private async void ToggleDarkMode()
+    {
+        isDark = !isDark;
+        await JS.InvokeVoidAsync("localStorage.setItem", "theme", isDark ? "dark" : "light");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var savedTheme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+
+            if (savedTheme == "dark")
+                isDark = true;
+            else if (savedTheme == "light")
+                isDark = false;
+            else
+                isDark = await JS.InvokeAsync<bool>("getSystemTheme");
+
+            StateHasChanged();
+        }
+    }
+
+    private RenderFragment NavLink(string href, string label, string icon, bool closeOnClick = false) => builder =>
+    {
+        var current = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/");
+        var isActive = current.StartsWith(href, StringComparison.OrdinalIgnoreCase);
+
+        var classes = isActive
+            ? "flex items-center gap-3 px-3 py-2 rounded bg-blue-600 text-white"
+            : isDark
+                ? "flex items-center gap-3 px-3 py-2 rounded text-gray-300 hover:bg-gray-800"
+                : "flex items-center gap-3 px-3 py-2 rounded text-gray-700 hover:bg-gray-100";
+
+        builder.OpenElement(0, "a");
+        builder.AddAttribute(1, "href", href);
+        builder.AddAttribute(2, "class", classes);
+
+        if (closeOnClick)
+            builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, ToggleMobileMenu));
+
+        builder.AddContent(4, (MarkupString)$"<i class='{icon}'></i>");
+        builder.AddContent(5, label);
+        builder.CloseElement();
+    };
+}

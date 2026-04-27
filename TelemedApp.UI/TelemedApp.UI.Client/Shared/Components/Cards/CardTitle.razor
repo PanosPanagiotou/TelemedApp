@@ -1,0 +1,23 @@
+﻿<h2 class="@BuildClasses()">
+    @ChildContent
+</h2>
+
+@code {
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public string Size { get; set; } = "md"; // sm, md, lg
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string BuildClasses()
+    {
+        var baseClass = "font-semibold tracking-tight";
+
+        var sizeClass = Size switch
+        {
+            "sm" => "text-sm",
+            "lg" => "text-xl",
+            _ => "text-base"
+        };
+
+        return $"{baseClass} {sizeClass} {CssClass}".Trim();
+    }
+}

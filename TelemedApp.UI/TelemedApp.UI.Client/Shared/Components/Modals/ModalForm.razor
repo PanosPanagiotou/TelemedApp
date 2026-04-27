@@ -1,0 +1,27 @@
+﻿<Modal Visible="@Visible"
+       VisibleChanged="@VisibleChanged"
+       Title="@Title"
+       OnClose="@OnClose"
+       OnConfirm="@OnSubmit">
+
+    <ModalBody>
+        @FormContent
+    </ModalBody>
+
+    <ModalFooter>
+        <Button Variant="secondary" OnClick="OnClose">Cancel</Button>
+        <Button Variant="primary" OnClick="OnSubmit">Save</Button>
+    </ModalFooter>
+
+</Modal>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    [Parameter] public string Title { get; set; } = "Form";
+    [Parameter] public RenderFragment? FormContent { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSubmit { get; set; }
+}

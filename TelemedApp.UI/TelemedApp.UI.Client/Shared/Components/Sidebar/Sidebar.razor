@@ -1,0 +1,177 @@
+﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using TelemedApp.UI.Client.Shared.Security
+@inherits LayoutComponentBase
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
+@namespace TelemedApp.UI.Client.Shared.Components.Sidebar
+
+<div class="flex h-screen">
+
+    <!-- Desktop Sidebar -->
+    <aside class="@SidebarClasses">
+        <div class="flex h-full flex-col">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-4 py-4">
+                <span class="text-lg font-semibold">
+                    @(Collapsed ? "T" : "TelemedApp")
+                </span>
+
+                <button class="hidden text-sm text-gray-500 dark:text-gray-400 md:inline-flex"
+                        @onclick="ToggleCollapse">
+                    @(Collapsed ? "»" : "«")
+                </button>
+            </div>
+
+            <!-- Nav -->
+            <nav class="flex-1 space-y-1 px-2 py-2">
+
+                <RoleGuard Roles="Admin">
+                    <SidebarItem Href="/admin/dashboard" Label="Admin Dashboard" />
+                    <SidebarItem Href="/admin/users" Label="User Management" />
+                </RoleGuard>
+
+                <RoleGuard Roles="Doctor">
+                    <SidebarItem Href="/doctor/patients" Label="My Patients" />
+                    <SidebarItem Href="/doctor/appointments" Label="Appointments" />
+                </RoleGuard>
+
+                <RoleGuard Roles="Nurse">
+                    <SidebarItem Href="/nurse/tasks" Label="Nurse Tasks" />
+                </RoleGuard>
+
+                <RoleGuard Roles="Finance">
+                    <SidebarItem Href="/finance/billing" Label="Billing" />
+                </RoleGuard>
+
+                <RoleGuard Roles="LabTechnician">
+                    <SidebarItem Href="/lab/tests" Label="Lab Tests" />
+                </RoleGuard>
+
+                <RoleGuard Roles="MaintenanceStaff">
+                    <SidebarItem Href="/maintenance/tasks" Label="Maintenance Tasks" />
+                </RoleGuard>
+
+                <RoleGuard Roles="User">
+                    <SidebarItem Href="/profile" Label="My Profile" />
+                </RoleGuard>
+
+            </nav>
+
+            <!-- Footer -->
+            @if (Footer is not null)
+            {
+                <div class="border-t border-gray-200 px-4 py-3 dark:border-gray-800">
+                    @Footer
+                </div>
+            }
+        </div>
+    </aside>
+
+    <!-- Mobile top bar -->
+    <div class="flex flex-1 flex-col">
+        <header class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3
+                       dark:border-gray-800 dark:bg-gray-900 md:hidden">
+            <button @onclick="ToggleMobile"
+                    class="inline-flex items-center justify-center rounded-md border border-gray-300
+                           bg-white px-2 py-1 text-sm dark:border-gray-700 dark:bg-gray-800">
+                ☰
+            </button>
+            <span class="text-sm font-semibold">TelemedApp</span>
+        </header>
+
+        <!-- Mobile Drawer -->
+        @if (MobileOpen)
+        {
+            <div class="fixed inset-0 z-40 flex md:hidden">
+                <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @onclick="ToggleMobile"></div>
+
+                <aside class="@MobileSidebarClasses">
+                    <div class="animate-slide-left flex h-full flex-col">
+                        <div class="flex items-center justify-between px-4 py-4">
+                            <span class="text-lg font-semibold">TelemedApp</span>
+                            <button @onclick="ToggleMobile">✕</button>
+                        </div>
+
+                        <nav class="flex-1 space-y-1 px-2 py-2">
+
+                            <RoleGuard Roles="Admin">
+                                <SidebarItem Href="/admin/dashboard" Label="Admin Dashboard" />
+                                <SidebarItem Href="/admin/users" Label="User Management" />
+                            </RoleGuard>
+
+                            <RoleGuard Roles="Doctor">
+                                <SidebarItem Href="/doctor/patients" Label="My Patients" />
+                                <SidebarItem Href="/doctor/appointments" Label="Appointments" />
+                            </RoleGuard>
+
+                            <RoleGuard Roles="Nurse">
+                                <SidebarItem Href="/nurse/tasks" Label="Nurse Tasks" />
+                            </RoleGuard>
+
+                            <RoleGuard Roles="Finance">
+                                <SidebarItem Href="/finance/billing" Label="Billing" />
+                            </RoleGuard>
+
+                            <RoleGuard Roles="LabTechnician">
+                                <SidebarItem Href="/lab/tests" Label="Lab Tests" />
+                            </RoleGuard>
+
+                            <RoleGuard Roles="MaintenanceStaff">
+                                <SidebarItem Href="/maintenance/tasks" Label="Maintenance Tasks" />
+                            </RoleGuard>
+
+                            <RoleGuard Roles="User">
+                                <SidebarItem Href="/profile" Label="My Profile" />
+                            </RoleGuard>
+
+                        </nav>
+
+                        @if (Footer is not null)
+                        {
+                            <div class="border-t border-gray-200 px-4 py-3 dark:border-gray-800">
+                                @Footer
+                            </div>
+                        }
+                    </div>
+                </aside>
+            </div>
+        }
+
+        <!-- Main content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 p-4 dark:bg-gray-950">
+            @Body
+        </main>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    [Parameter] public bool Collapsed { get; set; }
+    [Parameter] public EventCallback<bool> CollapsedChanged { get; set; }
+
+    private bool MobileOpen { get; set; }
+
+    private string SidebarClasses =>
+        $"hidden md:flex md:w-{(Collapsed ? "20" : "64")} shrink-0 border-r backdrop-blur-md " +
+        (IsDark
+            ? "bg-gray-900/80 border-gray-800 text-gray-100"
+            : "bg-white/80 border-gray-200 text-gray-900") +
+        " transition-all duration-300";
+
+    private string MobileSidebarClasses =>
+        "relative z-50 w-64 h-full border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 shadow-xl";
+
+    private async Task ToggleCollapse()
+    {
+        Collapsed = !Collapsed;
+        await CollapsedChanged.InvokeAsync(Collapsed);
+    }
+
+    private void ToggleMobile() => MobileOpen = !MobileOpen;
+}

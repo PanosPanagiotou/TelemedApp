@@ -1,0 +1,40 @@
+﻿<div class="@WrapperClasses">
+    @Icon
+</div>
+
+@code {
+    [Parameter] public RenderFragment? Icon { get; set; }
+
+    // NEW
+    [Parameter] public string Color { get; set; } = "blue";
+    [Parameter] public string Size { get; set; } = "md"; // sm, md, lg
+
+    private string WrapperClasses =>
+        $"{SizeClass} flex items-center justify-center rounded-xl {BgClass} {TextClass}";
+
+    private string SizeClass =>
+        Size switch
+        {
+            "sm" => "h-8 w-8",
+            "lg" => "h-14 w-14",
+            _ => "h-12 w-12"
+        };
+
+    private string BgClass =>
+        Color switch
+        {
+            "green" => "bg-green-100 dark:bg-green-900",
+            "red" => "bg-red-100 dark:bg-red-900",
+            "yellow" => "bg-yellow-100 dark:bg-yellow-900",
+            _ => "bg-blue-100 dark:bg-blue-900"
+        };
+
+    private string TextClass =>
+        Color switch
+        {
+            "green" => "text-green-600 dark:text-green-300",
+            "red" => "text-red-600 dark:text-red-300",
+            "yellow" => "text-yellow-600 dark:text-yellow-300",
+            _ => "text-blue-600 dark:text-blue-300"
+        };
+}

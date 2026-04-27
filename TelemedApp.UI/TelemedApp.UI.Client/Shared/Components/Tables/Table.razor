@@ -1,0 +1,82 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Tables
+
+<div class="@ContainerClasses">
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+
+            <!-- Header -->
+            <thead class="@HeaderClasses">
+                @ChildHeader
+            </thead>
+
+            <!-- Body -->
+            <tbody class="@BodyClasses">
+                @if (IsLoading)
+                {
+                    @TableSkeleton()
+                }
+                else if (IsEmpty)
+                {
+                    @EmptyState()
+                }
+                else
+                {
+                    @ChildRows
+                }
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public RenderFragment? ChildHeader { get; set; }
+    [Parameter] public RenderFragment? ChildRows { get; set; }
+
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool IsEmpty { get; set; }
+
+    private string ContainerClasses =>
+        "overflow-hidden rounded-xl border shadow-sm " +
+        (IsDark ? "border-gray-800 bg-gray-900" : "border-gray-200 bg-white");
+
+    private string HeaderClasses =>
+        "text-left text-xs font-semibold uppercase tracking-wide " +
+        (IsDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-700");
+
+    private string BodyClasses =>
+        "divide-y " +
+        (IsDark ? "divide-gray-800" : "divide-gray-200");
+
+    private RenderFragment TableSkeleton() => __builder =>
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            __builder.OpenElement(0, "tr");
+            for (int j = 0; j < 4; j++)
+            {
+                __builder.OpenElement(1, "td");
+                __builder.AddAttribute(2, "class",
+                    "px-4 py-3 animate-pulse " +
+                    (IsDark ? "bg-gray-800/50" : "bg-gray-100/50"));
+                __builder.AddContent(3, " ");
+                __builder.CloseElement();
+            }
+            __builder.CloseElement();
+        }
+    };
+
+    private RenderFragment EmptyState() => __builder =>
+    {
+        __builder.OpenElement(0, "tr");
+        __builder.OpenElement(1, "td");
+        __builder.AddAttribute(2, "colspan", "100%");
+        __builder.AddAttribute(3, "class",
+            "px-4 py-10 text-center text-gray-500 dark:text-gray-400");
+        __builder.AddContent(4, "No records found.");
+        __builder.CloseElement();
+        __builder.CloseElement();
+    };
+}

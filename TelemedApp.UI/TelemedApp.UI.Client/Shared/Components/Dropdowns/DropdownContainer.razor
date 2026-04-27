@@ -1,0 +1,9 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Dropdowns
+
+<div class="flex flex-col gap-1">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

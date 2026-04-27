@@ -1,0 +1,23 @@
+﻿<div class="@WrapperClasses">
+    <span class="@ArrowColor">@ArrowIcon</span>
+    <span class="@TextColor">@Value%</span>
+</div>
+
+@code {
+    [Parameter] public decimal Value { get; set; }
+    [Parameter] public bool Compact { get; set; } = false;
+
+    private string ArrowIcon =>
+        Value >= 0 ? "↑" : "↓";
+
+    private string ArrowColor =>
+        Value >= 0 ? "text-green-500" : "text-red-500";
+
+    private string TextColor =>
+        Value >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
+
+    private string WrapperClasses =>
+        Compact
+            ? "flex items-center gap-1 text-[11px] font-medium"
+            : "flex items-center gap-1 text-xs font-medium";
+}

@@ -1,0 +1,43 @@
+﻿@using TelemedApp.Application.DTOs
+@using TelemedApp.Domain.Entities
+@using TelemedApp.Domain.Enums
+@using TelemedApp.UI.Client.Models
+<Button Variant="ghost"
+        Tone="subtle"
+        Size="sm"
+        FullWidth="true"
+        CssClass="justify-start"
+        OnClick="OnClick">
+
+    <div class="flex flex-col">
+        <span class="text-sm font-semibold">@Appointment.PatientName</span>
+        <span class="text-xs text-gray-400">
+            @Appointment.ScheduledAt.ToString("HH:mm") • @Appointment.DoctorName
+        </span>
+
+        @if (IsPast?.Invoke(Appointment.ScheduledAt) == true)
+        {
+            <Badge Variant="@StatusVariant"
+                   Tone="subtle"
+                   Size="sm"
+                   CssClass="mt-1">
+                @Appointment.Status.ToDisplay()
+            </Badge>
+        }
+    </div>
+</Button>
+
+@code {
+    [Parameter] public AppointmentDto Appointment { get; set; } = default!;
+    [Parameter] public Func<DateTime, bool>? IsPast { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private string StatusVariant =>
+        Appointment.Status switch
+        {
+            AppointmentStatus.Completed => "success",
+            AppointmentStatus.Cancelled => "danger",
+            AppointmentStatus.NoShow => "danger",
+            _ => "info"
+        };
+}

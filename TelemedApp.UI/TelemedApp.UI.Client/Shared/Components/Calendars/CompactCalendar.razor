@@ -1,0 +1,260 @@
+﻿@using TelemedApp.Application.DTOs
+@using TelemedApp.UI.Client.Services
+@inject PermissionGuard Permission
+
+<div class="space-y-4">
+
+    <!-- HEADER -->
+    <div class="flex items-center justify-between">
+
+        <!-- Navigation -->
+        <div class="flex items-center gap-2">
+            <Button Variant="secondary" Size="sm" OnClick="Prev">Prev</Button>
+            <Button Variant="secondary" Size="sm" OnClick="Today">Today</Button>
+            <Button Variant="secondary" Size="sm" OnClick="Next">Next</Button>
+        </div>
+
+        <!-- View Switch -->
+        <div class="flex items-center gap-2">
+            @if (Permission.Has("Appointments.View"))
+            {
+                <Button Variant="ghost"
+                        Tone="subtle"
+                        Size="sm"
+                        CssClass="@(View == CalendarViewMode.Week ? "bg-blue-600 text-white" : "")"
+                        OnClick="() => SetView(CalendarViewMode.Week)">
+                    Week
+                </Button>
+
+                <Button Variant="ghost"
+                        Tone="subtle"
+                        Size="sm"
+                        CssClass="@(View == CalendarViewMode.Month ? "bg-blue-600 text-white" : "")"
+                        OnClick="() => SetView(CalendarViewMode.Month)">
+                    Month
+                </Button>
+            }
+        </div>
+    </div>
+
+    <!-- TITLE -->
+    <div class="flex items-center justify-between">
+        <h3 class="text-base font-semibold">@Title</h3>
+        <div class="text-xs text-gray-400">@Subtitle</div>
+    </div>
+
+    <!-- WEEK VIEW -->
+    @if (View == CalendarViewMode.Week)
+    {
+        <div class="grid grid-cols-7 gap-2">
+            @foreach (var day in WeekDays)
+            {
+                @if (Permission.Has("Appointments.View"))
+                {
+                    <CompactCalendarDay Date="day.Date"
+                                        AppointmentDto="day.AppointmentDto"
+                                        OnAppointmentClick="@OpenDetails"
+                                        OnBook="@OpenBooking" />
+                }
+            }
+        </div>
+    }
+    else
+    {
+        <!-- MONTH VIEW -->
+        <div class="grid grid-cols-7 gap-2">
+            @foreach (var cell in MonthCells)
+            {
+                @if (Permission.Has("Appointments.View"))
+                {
+                    <CompactCalendarMonthCell Cell="cell"
+                                              OnAppointmentClick="@OpenDetails"
+                                              OnBook="@OpenBooking" />
+                }
+            }
+        </div>
+    }
+
+    <!-- DETAILS MODAL -->
+    @if (Permission.Has("Appointments.View") && SelectedAppointment is not null)
+    {
+        <CompactDetailsModal Appointment="SelectedAppointment"
+                             OnClose="CloseDetails" />
+    }
+
+    <!-- BOOKING MODAL -->
+    @if (Permission.Has("Appointments.Create") && BookingDate is not null)
+    {
+        <CompactBookingModal Date="BookingDate.Value"
+                             AvailableSlots="AvailableSlots"
+                             IsLoadingSlots="IsLoadingSlots"
+                             SelectedSlot="SelectedSlot"
+                             OnSelectSlot="SelectSlot"
+                             OnClose="CloseBooking"
+                             OnConfirm="ConfirmBooking"
+                             NewPatient="NewPatient"
+                             NewDoctor="NewDoctor"
+                             NewNotes="NewNotes"
+                             OnPatientChanged="v => NewPatient = v"
+                             OnDoctorChanged="v => NewDoctor = v"
+                             OnNotesChanged="v => NewNotes = v" />
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<AppointmentDto>? Appointments { get; set; }
+    [Parameter] public EventCallback<AppointmentDto> OnAppointmentCreated { get; set; }
+    [Parameter] public Func<DateTime, Task<IEnumerable<TimeSpan>>>? OnRequestAvailability { get; set; }
+
+    enum CalendarViewMode { Week, Month }
+    CalendarViewMode View = CalendarViewMode.Week;
+
+    DateTime Anchor = DateTime.Today;
+    string Title => View == CalendarViewMode.Week ? $"Week of {StartOfWeek(Anchor):d}" : Anchor.ToString("Y");
+    string Subtitle => View == CalendarViewMode.Week ? $"{StartOfWeek(Anchor):d} — {StartOfWeek(Anchor).AddDays(6):d}" : "";
+
+    List<DaySlot> WeekDays = new();
+    List<MonthCell> MonthCells = new();
+
+    AppointmentDto? SelectedAppointment;
+    DateTime? BookingDate;
+
+    List<TimeSpan> AvailableSlots = new();
+    TimeSpan? SelectedSlot;
+    bool IsLoadingSlots = false;
+
+    string NewPatient = "";
+    string NewDoctor = "";
+    string NewNotes = "";
+
+    TimeSpan WorkStart = TimeSpan.FromHours(9);
+    TimeSpan WorkEnd = TimeSpan.FromHours(17);
+    TimeSpan SlotLength = TimeSpan.FromMinutes(30);
+    TimeSpan BufferBetween = TimeSpan.FromMinutes(0);
+
+    protected override void OnParametersSet() => BuildCalendar();
+
+    void SetView(CalendarViewMode v) { View = v; BuildCalendar(); }
+    void Prev() { Anchor = View == CalendarViewMode.Week ? Anchor.AddDays(-7) : Anchor.AddMonths(-1); BuildCalendar(); }
+    void Next() { Anchor = View == CalendarViewMode.Week ? Anchor.AddDays(7) : Anchor.AddMonths(1); BuildCalendar(); }
+    void Today() { Anchor = DateTime.Today; BuildCalendar(); }
+
+    void BuildCalendar()
+    {
+        var list = (Appointments ?? Enumerable.Empty<AppointmentDto>()).ToList();
+
+        var start = StartOfWeek(Anchor);
+        WeekDays = Enumerable.Range(0, 7).Select(i =>
+        {
+            var d = start.AddDays(i);
+            var aps = list.Where(a => a.ScheduledAt.Date == d.Date).OrderBy(a => a.ScheduledAt).ToList();
+            return new DaySlot { Date = d, AppointmentDto = aps };
+        }).ToList();
+
+        var firstOfMonth = new DateTime(Anchor.Year, Anchor.Month, 1);
+        var startCell = firstOfMonth.AddDays(-(int)firstOfMonth.DayOfWeek);
+        MonthCells = Enumerable.Range(0, 42).Select(i =>
+        {
+            var d = startCell.AddDays(i);
+            var aps = list.Where(a => a.ScheduledAt.Date == d.Date).OrderBy(a => a.ScheduledAt).ToList();
+            return new MonthCell { Date = d, AppointmentDto = aps, IsCurrentMonth = d.Month == Anchor.Month };
+        }).ToList();
+    }
+
+    void OpenDetails(AppointmentDto ap) => SelectedAppointment = ap;
+    void CloseDetails() => SelectedAppointment = null;
+
+    async void OpenBooking(DateTime date)
+    {
+        BookingDate = date.Date;
+        SelectedSlot = null;
+        NewPatient = "";
+        NewDoctor = "";
+        NewNotes = "";
+        AvailableSlots.Clear();
+        IsLoadingSlots = true;
+        StateHasChanged();
+
+        if (OnRequestAvailability != null)
+        {
+            try
+            {
+                var slots = await OnRequestAvailability.Invoke(BookingDate.Value);
+                AvailableSlots = slots.OrderBy(s => s).ToList();
+            }
+            catch
+            {
+                AvailableSlots = ComputeLocalAvailability(BookingDate.Value);
+            }
+        }
+        else
+        {
+            AvailableSlots = ComputeLocalAvailability(BookingDate.Value);
+        }
+
+        IsLoadingSlots = false;
+        StateHasChanged();
+    }
+
+    void CloseBooking()
+    {
+        BookingDate = null;
+        AvailableSlots.Clear();
+        SelectedSlot = null;
+    }
+
+    List<TimeSpan> ComputeLocalAvailability(DateTime date)
+    {
+        var slots = new List<TimeSpan>();
+        for (var t = WorkStart; t + SlotLength <= WorkEnd; t += SlotLength)
+            slots.Add(t);
+
+        var existing = (Appointments ?? Enumerable.Empty<AppointmentDto>())
+                       .Where(a => a.ScheduledAt.Date == date.Date)
+                       .Select(a => a.ScheduledAt.TimeOfDay)
+                       .ToList();
+
+        return slots.Where(s =>
+            !existing.Any(e =>
+                (e < s + SlotLength + BufferBetween) &&
+                (e + SlotLength + BufferBetween > s)
+            )
+        ).ToList();
+    }
+
+    void SelectSlot(TimeSpan slot) => SelectedSlot = slot;
+
+    async Task ConfirmBooking()
+    {
+        if (BookingDate is null || SelectedSlot is null) return;
+
+        var dt = BookingDate.Value.Date + SelectedSlot.Value;
+
+        var ap = new AppointmentDto
+        {
+            PatientName = string.IsNullOrWhiteSpace(NewPatient) ? "Unknown" : NewPatient,
+            DoctorName = string.IsNullOrWhiteSpace(NewDoctor) ? "TBD" : NewDoctor,
+            ScheduledAt = dt,
+            Notes = NewNotes ?? ""
+        };
+
+
+        if (OnAppointmentCreated.HasDelegate)
+            await OnAppointmentCreated.InvokeAsync(ap);
+
+        if (Appointments is IList<AppointmentDto> list)
+            list.Add(ap);
+
+        CloseBooking();
+        BuildCalendar();
+    }
+
+    static DateTime StartOfWeek(DateTime dt)
+    {
+        var diff = (7 + (dt.DayOfWeek - DayOfWeek.Monday)) % 7;
+        return dt.AddDays(-diff).Date;
+    }
+
+    class DaySlot { public DateTime Date { get; set; } = DateTime.Today; public List<AppointmentDto> AppointmentDto { get; set; } = new(); }
+    class MonthCell { public DateTime Date { get; set; } = DateTime.Today; public List<AppointmentDto> AppointmentDto { get; set; } = new(); public bool IsCurrentMonth { get; set; } = true; }
+}

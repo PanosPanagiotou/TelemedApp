@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-mode="class">
+
+<head>
+    <meta charset="utf-8" />
+    <title>TelemedApp</title>
+    <base href="/" />
+
+    <!-- Tailwind compiled CSS -->
+    <link href="css/site.css" rel="stylesheet" />
+</head>
+
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+    <div id="app">Loading...</div>
+
+    <div id="blazor-error-ui" class="hidden">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+
+    <!-- ESC close -->
+    <script src="js/modal.js"></script>
+
+    <!-- InputMask -->
+    <script src="js/mask.js"></script>
+
+    <!-- TextArea -->
+    <script src="js/textarea.js"></script>
+
+    <!-- Dropdown menu-->
+    <script src="js/dropdown.js"></script>
+
+    <!-- Animated Counter Script -->
+    <script>
+        window.animateCounter = (el, target) => {
+            let start = 0;
+            let duration = 800;
+            let step = Math.ceil(target / (duration / 16));
+
+            let interval = setInterval(() => {
+                start += step;
+                if (start >= target) {
+                    start = target;
+                    clearInterval(interval);
+                }
+                el.innerText = start.toLocaleString();
+            }, 16);
+        };
+    </script>
+
+    <!-- Getting Color Scheme -->
+    <script>
+        window.getSystemTheme = function () {
+            return window.matchMedia("(prefers-color-scheme: dark)").matches;
+        };
+    </script>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,15 @@
+﻿<div class="@Classes">
+    vs @Period
+</div>
+
+@code {
+    [Parameter] public string Period { get; set; } = "last week";
+
+    // NEW
+    [Parameter] public bool Compact { get; set; } = false;
+
+    private string Classes =>
+        Compact
+            ? "text-[11px] text-gray-500 dark:text-gray-400"
+            : "text-xs text-gray-500 dark:text-gray-400";
+}

@@ -1,0 +1,18 @@
+﻿<button class="@BuildClasses()" @onclick="() => OnSelect.InvokeAsync(Slot)">
+    @Slot.ToString(@"hh\:mm")
+</button>
+
+@code {
+    [Parameter] public TimeSpan Slot { get; set; }
+    [Parameter] public TimeSpan? Selected { get; set; }
+    [Parameter] public EventCallback<TimeSpan> OnSelect { get; set; }
+
+    private string BuildClasses()
+    {
+        var isSelected = Selected == Slot;
+
+        return isSelected
+            ? "rounded px-2 py-1 text-sm bg-blue-600 text-white"
+            : "rounded px-2 py-1 text-sm bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600";
+    }
+}

@@ -1,0 +1,24 @@
+﻿@using TelemedApp.Application.DTOs
+@using TelemedApp.Domain.Entities
+@using TelemedApp.UI.Client.Models
+
+<Button Variant="ghost"
+        Tone="subtle"
+        Size="sm"
+        FullWidth="true"
+        CssClass="justify-start text-xs"
+        OnClick="OnClick">
+
+    <div class="truncate font-medium">
+        @Appointment.ScheduledAt.ToString("HH:mm") — @Appointment.PatientName
+    </div>
+
+    <div class="truncate text-[11px] text-gray-400">
+        @Appointment.DoctorName
+    </div>
+</Button>
+
+@code {
+    [Parameter] public AppointmentDto Appointment { get; set; } = default!;
+    [Parameter] public EventCallback OnClick { get; set; }
+}

@@ -12,5 +12,6 @@ namespace TelemedApp.Domain.Entities
 
         public Patient? Patient { get; set; }
         public Doctor? Doctor { get; set; }
+        public string Notes { get; set; } = string.Empty;
     }
 }

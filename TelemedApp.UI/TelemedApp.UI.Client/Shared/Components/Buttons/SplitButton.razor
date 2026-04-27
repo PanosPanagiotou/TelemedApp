@@ -1,0 +1,28 @@
+﻿<div class="relative inline-flex rounded-lg shadow-sm">
+    <Button Variant="@Variant" OnClick="@OnClick">
+        @ChildContent
+    </Button>
+
+    <button @onclick="Toggle"
+            class="rounded-r-lg border-l border-gray-300 bg-gray-100 px-3 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600">
+        <i class="ph-caret-down"></i>
+    </button>
+
+    @if (Open)
+    {
+        <div class="animate-fade-in absolute right-0 z-50 mt-1 w-40 rounded-lg bg-white p-2 shadow-lg dark:bg-gray-800">
+            @MenuContent
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Variant { get; set; } = "primary";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? MenuContent { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private bool Open { get; set; }
+
+    private void Toggle() => Open = !Open;
+}

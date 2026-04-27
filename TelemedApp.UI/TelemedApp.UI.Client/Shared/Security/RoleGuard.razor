@@ -1,0 +1,224 @@
+﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@using TelemedApp.Shared.Authorization
+
+
+@if (isLoading)
+{
+    @if (LoadingContent is not null)
+    {
+        @LoadingContent
+    }
+}
+else if (isAuthorized)
+{
+    <CascadingValue Value="UserRoles">
+        @ChildContent
+    </CascadingValue>
+}
+else
+{
+    @if (Fallback is not null)
+    {
+        @Fallback
+    }
+    else if (Debug)
+    {
+        <div class="text-xs text-red-500">
+            Access denied.
+            @if (!string.IsNullOrWhiteSpace(DebugMessage))
+            {
+                <span> (@DebugMessage)</span>
+            }
+        </div>
+    }
+}
+
+@code {
+    // Core
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // Roles
+    [Parameter] public string Roles { get; set; } = "";          // "Admin,Doctor"
+    [Parameter] public bool RequireAllRoles { get; set; } = false;
+    [Parameter] public string DenyRoles { get; set; } = "";      // "Finance"
+
+    // Policies (name-based, evaluated client-side via claims/roles)
+    [Parameter] public string? Policy { get; set; }
+
+    // RequiredPermissions (claims like "CanEditDoctors", "CanViewBilling")
+    [Parameter] public string RequiredPermissions { get; set; } = "";    // "CanEditDoctors,CanViewBilling"
+    [Parameter] public bool RequireAllPermissions { get; set; } = false;
+
+    // Feature flags (claims like "Feature:NewDashboard")
+    [Parameter] public string FeatureFlags { get; set; } = "";   // "NewDashboard,LabV2"
+    [Parameter] public bool RequireAllFeatures { get; set; } = false;
+
+    // UI
+    [Parameter] public RenderFragment? Fallback { get; set; }
+    [Parameter] public RenderFragment? LoadingContent { get; set; }
+
+    // Debug
+    [Parameter] public bool Debug { get; set; } = false;
+    public string DebugMessage { get; private set; } = "";
+
+    // Exposed roles to children
+    public string[] UserRoles { get; private set; } = [];
+
+    private bool isAuthorized = false;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (user?.Identity is null || !user.Identity.IsAuthenticated)
+        {
+            SetDenied("User is not authenticated.");
+            return;
+        }
+
+        UserRoles = user.Claims
+            .Where(c => c.Type == ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToArray();
+
+        var roleList = SplitParam(Roles);
+        var denyRoleList = SplitParam(DenyRoles);
+        var permissionList = SplitParam(RequiredPermissions);
+        var featureList = SplitParam(FeatureFlags);
+
+        // 1. DenyRoles – αν έχει έστω έναν από αυτούς, κόβεται
+        if (denyRoleList.Any() && denyRoleList.Any(r => user.IsInRole(r)))
+        {
+            SetDenied($"User has denied role(s): {string.Join(", ", denyRoleList.Intersect(UserRoles))}");
+            return;
+        }
+
+        // 2. Roles – RequireAll ή Any
+        if (roleList.Any())
+        {
+            var hasRoles = roleList.Where(r => user.IsInRole(r)).ToArray();
+
+            if (RequireAllRoles)
+            {
+                if (hasRoles.Length != roleList.Length)
+                {
+                    var missing = roleList.Except(hasRoles).ToArray();
+                    SetDenied($"Missing required role(s): {string.Join(", ", missing)}");
+                    return;
+                }
+            }
+            else
+            {
+                if (!hasRoles.Any())
+                {
+                    SetDenied($"User has none of required role(s): {string.Join(", ", roleList)}");
+                    return;
+                }
+            }
+        }
+
+        // 3. RequiredPermissions – από claims τύπου "permission"
+        if (permissionList.Any())
+        {
+            var userPermissions = user.Claims
+                .Where(c => c.Type == "permission")
+                .Select(c => c.Value)
+                .ToArray();
+
+            var hasPerms = permissionList.Where(p => userPermissions.Contains(p)).ToArray();
+
+            if (RequireAllPermissions)
+            {
+                if (hasPerms.Length != permissionList.Length)
+                {
+                    var missing = permissionList.Except(hasPerms).ToArray();
+                    SetDenied($"Missing permission(s): {string.Join(", ", missing)}");
+                    return;
+                }
+            }
+            else
+            {
+                if (!hasPerms.Any())
+                {
+                    SetDenied($"User has none of required permission(s): {string.Join(", ", permissionList)}");
+                    return;
+                }
+            }
+        }
+
+        // 4. Feature flags – από claims τύπου "feature"
+        if (featureList.Any())
+        {
+            var userFeatures = user.Claims
+                .Where(c => c.Type == "feature")
+                .Select(c => c.Value)
+                .ToArray();
+
+            var hasFeatures = featureList.Where(f => userFeatures.Contains(f)).ToArray();
+
+            if (RequireAllFeatures)
+            {
+                if (hasFeatures.Length != featureList.Length)
+                {
+                    var missing = featureList.Except(hasFeatures).ToArray();
+                    SetDenied($"Missing feature flag(s): {string.Join(", ", missing)}");
+                    return;
+                }
+            }
+            else
+            {
+                if (!hasFeatures.Any())
+                {
+                    SetDenied($"User has none of required feature flag(s): {string.Join(", ", featureList)}");
+                    return;
+                }
+            }
+        }
+
+        // 5. Policy – απλή, client-side, βασισμένη σε roles/permissions/claims
+        if (!string.IsNullOrWhiteSpace(Policy))
+        {
+            // Εδώ μπορείς να χαρτογραφήσεις policies σε λογική
+            // π.χ. "CanViewBilling" => Admin ή Finance
+            isAuthorized = EvaluatePolicy(Policy, user);
+
+            if (!isAuthorized)
+            {
+                SetDenied($"Policy '{Policy}' not satisfied.");
+                return;
+            }
+        }
+
+        // Αν φτάσαμε εδώ χωρίς deny, είναι authorized
+        isAuthorized = true;
+        isLoading = false;
+    }
+
+    private void SetDenied(string reason)
+    {
+        isAuthorized = false;
+        isLoading = false;
+        if (Debug)
+            DebugMessage = reason;
+    }
+
+    private static string[] SplitParam(string value) =>
+        string.IsNullOrWhiteSpace(value)
+            ? Array.Empty<string>()
+            : value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+    private bool EvaluatePolicy(string policy, ClaimsPrincipal user)
+    {
+        return policy switch
+        {
+            "CanViewBilling" => user.HasClaim("permission", Billing.View),
+            "CanManageBilling" => user.HasClaim("permission", Billing.Manage),
+            "CanEditDoctors" => user.HasClaim("permission", Doctors.Edit),
+            _ => false
+        };
+    }
+}

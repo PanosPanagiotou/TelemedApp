@@ -1,0 +1,63 @@
+﻿<div class="modal-overlay" @onclick="Close"></div>
+
+<div class="modal-container max-w-md">
+
+    <h4 class="text-lg font-semibold">Book — @Date.ToString("D")</h4>
+
+    <div class="mt-3">
+        <div class="mb-2 text-xs text-gray-500">Available slots</div>
+
+        @if (IsLoadingSlots)
+        {
+            <div class="text-sm text-gray-500">Loading slots…</div>
+        }
+        else if (!AvailableSlots.Any())
+        {
+            <div class="text-sm text-gray-500">No available slots for this day.</div>
+        }
+        else
+        {
+            <div class="grid grid-cols-3 gap-2">
+                @foreach (var slot in AvailableSlots)
+                {
+                    <CompactSlotChip Slot="slot"
+                                     Selected="SelectedSlot"
+                                     OnSelect="OnSelectSlot" />
+                }
+            </div>
+        }
+    </div>
+
+    <div class="mt-3 space-y-2">
+        <input class="input" placeholder="Patient name" @bind="NewPatient" />
+        <input class="input" placeholder="Doctor" @bind="NewDoctor" />
+        <textarea class="input" placeholder="Notes" @bind="NewNotes"></textarea>
+    </div>
+
+    <div class="mt-4 flex justify-end gap-2">
+        <Button Variant="secondary" OnClick="Close">Cancel</Button>
+        <Button Variant="primary" Disabled="@(SelectedSlot == null)" OnClick="Confirm">Confirm</Button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public DateTime Date { get; set; }
+    [Parameter] public List<TimeSpan> AvailableSlots { get; set; } = new();
+    [Parameter] public bool IsLoadingSlots { get; set; }
+    [Parameter] public TimeSpan? SelectedSlot { get; set; }
+
+    [Parameter] public EventCallback<TimeSpan> OnSelectSlot { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+
+    [Parameter] public string NewPatient { get; set; } = "";
+    [Parameter] public string NewDoctor { get; set; } = "";
+    [Parameter] public string NewNotes { get; set; } = "";
+
+    [Parameter] public EventCallback<string> OnPatientChanged { get; set; }
+    [Parameter] public EventCallback<string> OnDoctorChanged { get; set; }
+    [Parameter] public EventCallback<string> OnNotesChanged { get; set; }
+
+    void Close() => OnClose.InvokeAsync();
+    void Confirm() => OnConfirm.InvokeAsync();
+}

@@ -1,0 +1,25 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Navbars
+
+<button class="@BuildClasses()" @onclick="OnClick">
+    @ChildContent
+</button>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private string BuildClasses()
+    {
+        var baseClass =
+            "relative inline-flex items-center justify-center h-9 w-9 rounded-md " +
+            "transition-colors duration-150";
+
+        var themeClass = IsDark
+            ? "text-gray-300 hover:bg-gray-800"
+            : "text-gray-600 hover:bg-gray-100";
+
+        return $"{baseClass} {themeClass}";
+    }
+}

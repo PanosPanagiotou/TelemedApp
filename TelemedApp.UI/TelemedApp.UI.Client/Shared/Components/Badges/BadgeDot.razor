@@ -1,0 +1,35 @@
+﻿<span class="@BuildClasses()"></span>
+
+@code {
+    [Parameter] public string Color { get; set; } = "gray";
+    [Parameter] public string Size { get; set; } = "md"; // sm, md, lg
+    [Parameter] public bool Pulse { get; set; } = false;
+    [Parameter] public bool Shadow { get; set; } = false;
+
+    private string BuildClasses()
+    {
+        var baseClass = "inline-block rounded-full";
+
+        var sizeClass = Size switch
+        {
+            "sm" => "h-1.5 w-1.5",
+            "lg" => "h-3 w-3",
+            _ => "h-2 w-2"
+        };
+
+        var colorClass = Color switch
+        {
+            "green" => "bg-green-500",
+            "red" => "bg-red-500",
+            "yellow" => "bg-yellow-400",
+            "blue" => "bg-blue-500",
+            "purple" => "bg-purple-500",
+            _ => "bg-gray-400"
+        };
+
+        var pulseClass = Pulse ? "animate-pulse" : "";
+        var shadowClass = Shadow ? "shadow-sm" : "";
+
+        return $"{baseClass} {sizeClass} {colorClass} {pulseClass} {shadowClass}".Trim();
+    }
+}

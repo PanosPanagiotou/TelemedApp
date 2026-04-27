@@ -1,0 +1,43 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Navbars
+
+<div class="relative" @onclick:stopPropagation="true">
+
+    <!-- Avatar button -->
+    <button @onclick="Toggle"
+            class="flex items-center gap-2 rounded-md px-2 py-1 transition hover:bg-gray-100 dark:hover:bg-gray-800">
+        <img src="@AvatarUrl" class="h-8 w-8 rounded-full" />
+        <span class="hidden text-sm md:inline">@UserName</span>
+    </button>
+
+    <!-- Dropdown -->
+    @if (Open)
+    {
+        <div class="@DropdownClasses">
+            <button class="dropdown-item" @onclick="Profile">Profile</button>
+            <button class="dropdown-item" @onclick="Settings">Settings</button>
+            <button class="dropdown-item text-red-600" @onclick="Logout">Logout</button>
+        </div>
+    }
+
+</div>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public string UserName { get; set; } = "User";
+    [Parameter] public string AvatarUrl { get; set; } = "img/avatar.png";
+
+    private bool Open { get; set; }
+
+    private string DropdownClasses =>
+        "absolute right-0 mt-2 w-40 rounded-lg border shadow-lg animate-scale-fade z-50 " +
+        (IsDark
+            ? "bg-gray-900 border-gray-700"
+            : "bg-white border-gray-200");
+
+    private void Toggle() => Open = !Open;
+
+    private void Profile() { }
+    private void Settings() { }
+    private void Logout() { }
+}

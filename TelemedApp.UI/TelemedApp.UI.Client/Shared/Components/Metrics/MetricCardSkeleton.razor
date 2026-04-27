@@ -1,0 +1,14 @@
+﻿<div class="@WrapperClasses">
+    <div class="mb-3 h-4 w-24 rounded bg-gray-300 dark:bg-gray-700"></div>
+    <div class="mb-2 h-8 w-32 rounded bg-gray-300 dark:bg-gray-700"></div>
+    <div class="h-3 w-20 rounded bg-gray-300 dark:bg-gray-700"></div>
+</div>
+
+@code {
+    [Parameter] public bool Compact { get; set; } = false;
+
+    private string WrapperClasses =>
+        Compact
+            ? "animate-pulse rounded-xl p-4 bg-white dark:bg-gray-900 shadow-sm"
+            : "animate-pulse rounded-xl p-6 bg-white dark:bg-gray-900 shadow-sm";
+}

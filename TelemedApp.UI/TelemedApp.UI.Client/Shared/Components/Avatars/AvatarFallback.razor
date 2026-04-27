@@ -1,0 +1,11 @@
+﻿@code {
+    [Parameter] public string? Name { get; set; }
+
+    private string Initials =>
+        string.Join("", Name?
+                            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(n => n[0])
+                            .Take(2)
+                        ?? Array.Empty<char>())
+            .ToUpper();
+}

@@ -1,0 +1,73 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Modals
+@using TelemedApp.Domain.Entities
+@using TelemedApp.UI.Client.Models
+
+<Modal Visible="@Visible"
+       VisibleChanged="@VisibleChanged"
+       Title="@Steps[CurrentStep].Title"
+       Size="ModalSize.Large"
+       OnClose="@OnClose">
+
+    <!-- Progress Bar -->
+    <div class="mb-4 h-1 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+        <div class="h-full bg-blue-500 transition-all duration-300"
+             style="width:@Progress%">
+        </div>
+    </div>
+
+    <!-- Step Content -->
+    <ModalBody>
+        @Steps[CurrentStep].Content
+    </ModalBody>
+
+    <!-- Footer -->
+    <ModalFooter>
+        @if (CurrentStep > 0)
+        {
+            <Button Variant="secondary" OnClick="Prev">Back</Button>
+        }
+
+        @if (CurrentStep < Steps.Count - 1)
+        {
+            <Button Variant="primary" OnClick="Next">Next</Button>
+        }
+        else
+        {
+            <Button Variant="primary" OnClick="Finish">Finish</Button>
+        }
+    </ModalFooter>
+
+</Modal>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    [Parameter] public List<ModalStep> Steps { get; set; } = new();
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnFinish { get; set; }
+
+    private int CurrentStep { get; set; } = 0;
+
+    private string Progress =>
+        Steps.Count == 0
+            ? "0%"
+            : $"{((CurrentStep + 1) * 100 / Steps.Count)}%";
+
+    private void Next()
+    {
+        if (CurrentStep < Steps.Count - 1)
+            CurrentStep++;
+    }
+
+    private void Prev()
+    {
+        if (CurrentStep > 0)
+            CurrentStep--;
+    }
+
+    private async Task Finish()
+    {
+        await OnFinish.InvokeAsync();
+    }
+}

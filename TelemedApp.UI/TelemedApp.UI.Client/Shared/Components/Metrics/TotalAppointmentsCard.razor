@@ -1,0 +1,34 @@
+﻿<MetricCard Title="Total Appointments"
+            Value="@CountAll.ToString("N0")"
+            Subtitle="@EffectiveSubtitle"
+            Trend="@Trend"
+            Icon="fa-solid fa-calendar-check" />
+
+
+@code {
+    [Parameter] public int CountAll { get; set; }
+    [Parameter] public int CountCompleted { get; set; }
+    [Parameter] public int CountCancelled { get; set; }
+
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public bool Compact { get; set; }
+
+    public string EffectiveSubtitle =>
+        !string.IsNullOrWhiteSpace(Subtitle)
+            ? Subtitle
+            : $"{CountCompleted} completed · {CountCancelled} cancelled";
+
+    public string Trend
+    {
+        get
+        {
+            if (CountCompleted > CountCancelled)
+                return "up";
+
+            if (CountCompleted < CountCancelled)
+                return "down";
+
+            return "";
+        }
+    }
+}

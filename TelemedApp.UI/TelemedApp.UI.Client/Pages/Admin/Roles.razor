@@ -1,0 +1,90 @@
+﻿@page "/admin/roles"
+@using TelemedApp.UI.Client.Services
+@using TelemedApp.UI.Client.Models
+@inject PermissionGuard Permission
+@inject AuthService AuthService
+
+<DashboardPage Header="@Header">
+
+    @if (!Permission.Has("Admin.ManageRoles"))
+    {
+        <NotAuthorizedPage />
+        return;
+    }
+
+    <div class="space-y-6">
+
+        @foreach (var role in RolesList)
+        {
+            <Card Variant="default">
+                <CardHeader>
+                    <CardTitle Size="lg">@role.Role</CardTitle>
+                </CardHeader>
+
+                <CardBody Variant="loose">
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                        @foreach (var perm in AllPermissions)
+                        {
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox"
+                                       checked="@role.Permissions.Contains(perm)"
+                                       @onchange="e => TogglePermission(role, perm, e.Value!)" />
+                                <span>@perm</span>
+                            </label>
+                        }
+
+                    </div>
+
+                    <div class="mt-4 text-right">
+                        <Button Variant="primary" OnClick="@(() => SaveRole(role))">
+                            Save Changes
+                        </Button>
+                    </div>
+
+                </CardBody>
+            </Card>
+        }
+
+    </div>
+
+</DashboardPage>
+
+@code {
+    RenderFragment Header => @<DashboardHeader Title="Roles & Permissions"
+                     Subtitle="Manage role permissions"
+                     Icon="fa-solid fa-user-gear" />;
+
+    List<RoleViewModel> RolesList = [];
+    List<string> AllPermissions = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Permission.Has("Admin.ManageRoles"))
+            return;
+
+        RolesList = await AuthService.GetRoles();
+        AllPermissions = await AuthService.GetAllPermissions();
+    }
+
+    void TogglePermission(RoleViewModel role, string permission, object value)
+    {
+        bool isChecked = (bool)value;
+
+        if (isChecked)
+        {
+            if (!role.Permissions.Contains(permission))
+                role.Permissions.Add(permission);
+        }
+        else
+        {
+            role.Permissions.Remove(permission);
+        }
+    }
+
+    async Task SaveRole(RoleViewModel role)
+    {
+        await AuthService.UpdateRolePermissions(role.Role, role.Permissions);
+    }
+}

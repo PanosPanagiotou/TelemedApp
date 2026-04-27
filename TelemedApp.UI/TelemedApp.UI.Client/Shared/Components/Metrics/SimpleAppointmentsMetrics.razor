@@ -1,0 +1,51 @@
+﻿@using TelemedApp.UI.Client.Shared.Components.Metrics
+
+<div class="flex flex-col gap-6">
+
+    <MetricCard Title="Total Appointments"
+                Value="@Total.ToString("N0")"
+                Subtitle="@($"{Completed} completed · {Cancelled} cancelled")"
+                Trend="@Trend"
+                Icon="fa-solid fa-calendar-check" />
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+        <MetricCard Title="Completed"
+                    Value="@Completed.ToString("N0")"
+                    Subtitle="This period"
+                    Trend="up"
+                    Icon="fa-solid fa-circle-check"
+                    Compact="true" />
+
+        <MetricCard Title="Cancelled"
+                    Value="@Cancelled.ToString("N0")"
+                    Subtitle="This period"
+                    Trend="down"
+                    Icon="fa-solid fa-circle-xmark"
+                    Compact="true" />
+
+        <MetricCard Title="Upcoming"
+                    Value="@Upcoming.ToString("N0")"
+                    Subtitle="Next 24 hours"
+                    Trend="@UpcomingTrend"
+                    Icon="fa-solid fa-clock"
+                    Compact="true" />
+
+    </div>
+
+</div>
+
+@code {
+    [Parameter] public int Total { get; set; }
+    [Parameter] public int Completed { get; set; }
+    [Parameter] public int Cancelled { get; set; }
+    [Parameter] public int Upcoming { get; set; }
+
+    private string Trend =>
+        Completed > Cancelled ? "up" :
+        Completed < Cancelled ? "down" : "";
+
+    private string UpcomingTrend =>
+        Upcoming > 10 ? "up" :
+        Upcoming < 3 ? "down" : "";
+}

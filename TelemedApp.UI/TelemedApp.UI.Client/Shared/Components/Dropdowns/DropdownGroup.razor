@@ -1,0 +1,12 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Dropdowns
+
+<div class="px-3 py-1 text-xs font-semibold opacity-60">
+    @Label
+</div>
+
+@ChildContent
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,29 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Tables
+
+<tr class="@BuildClasses()" @onclick="OnClick">
+    @ChildContent
+</tr>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public bool Clickable { get; set; }
+    [Parameter] public bool Active { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string BuildClasses()
+    {
+        var baseClass = "transition-colors";
+
+        var hoverClass = Clickable
+            ? (IsDark ? "hover:bg-gray-800 cursor-pointer" : "hover:bg-gray-50 cursor-pointer")
+            : "";
+
+        var activeClass = Active
+            ? (IsDark ? "bg-gray-800" : "bg-blue-50")
+            : "";
+
+        return $"{baseClass} {hoverClass} {activeClass}";
+    }
+}

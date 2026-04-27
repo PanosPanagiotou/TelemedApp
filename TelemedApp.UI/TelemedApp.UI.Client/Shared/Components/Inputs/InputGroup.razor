@@ -1,0 +1,14 @@
+﻿<div class="flex w-full items-center gap-2">
+    <div class="flex-1">
+        @Input
+    </div>
+
+    <div>
+        @Button
+    </div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? Input { get; set; }
+    [Parameter] public RenderFragment? Button { get; set; }
+}

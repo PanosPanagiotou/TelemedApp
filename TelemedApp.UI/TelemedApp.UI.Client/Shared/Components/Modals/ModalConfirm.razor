@@ -1,0 +1,47 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Modals
+@using TelemedApp.UI.Client.Models
+
+<Modal Visible="@Visible"
+       VisibleChanged="@VisibleChanged"
+       Title="@Title"
+       Size="ModalSize.Small"
+       OnClose="@OnClose"
+       OnConfirm="@OnConfirm">
+
+    <ModalBody>
+        <p class="text-sm text-gray-600 dark:text-gray-300">
+            @Message
+        </p>
+    </ModalBody>
+
+    <ModalFooter>
+        <Button OnClick="OnClose">Cancel</Button>
+
+        @if (Variant == "danger")
+        {
+            <Button Danger OnClick="OnConfirm">Delete</Button>
+        }
+        else if (Variant == "success")
+        {
+            <Button Success OnClick="OnConfirm">OK</Button>
+        }
+        else
+        {
+            <Button Variant="primary" OnClick="OnConfirm">Confirm</Button>
+        }
+    </ModalFooter>
+
+</Modal>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    [Parameter] public string Title { get; set; } = "Confirm";
+    [Parameter] public string Message { get; set; } = "Are you sure?";
+
+    [Parameter] public string Variant { get; set; } = "default"; // default, danger, success
+
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+}

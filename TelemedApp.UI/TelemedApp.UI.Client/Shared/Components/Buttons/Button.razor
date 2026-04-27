@@ -1,0 +1,26 @@
+﻿<button type="@Type"
+        @onclick="HandleClick"
+        @attributes="GetDisabledAttribute()"
+        class="@BuildClasses()">
+
+    @if (Loading && LoadingOverlay)
+    {
+        <span class="absolute inset-0 flex items-center justify-center rounded-lg bg-black/10 dark:bg-white/10">
+            <span class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
+        </span>
+    }
+
+    <span class="@ContentClasses">
+        @if (Icon != null && IconPosition == "left")
+        {
+            <span class="mr-2 flex items-center">@Icon</span>
+        }
+
+        @ChildContent
+
+        @if (Icon != null && IconPosition == "right")
+        {
+            <span class="ml-2 flex items-center">@Icon</span>
+        }
+    </span>
+</button>

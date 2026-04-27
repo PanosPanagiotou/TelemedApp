@@ -1,0 +1,40 @@
+﻿@inject NavigationManager Nav
+@namespace TelemedApp.UI.Client.Shared.Components.Sidebar
+
+<button class="@BuildClasses()" @onclick="Navigate">
+    @if (Icon is not null)
+    {
+        <span class="mr-3 flex items-center">
+            @Icon
+        </span>
+    }
+    <span class="truncate">@Label</span>
+</button>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public string Href { get; set; } = "/";
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public RenderFragment? Icon { get; set; }
+
+    private bool IsActive =>
+        Nav.Uri.Contains(Href, StringComparison.OrdinalIgnoreCase);
+
+    private string BuildClasses()
+    {
+        var baseClass =
+            "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium " +
+            "transition-colors duration-150";
+
+        var activeClass = IsActive
+            ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+            : (IsDark
+                ? "text-gray-300 hover:bg-gray-800 hover:text-white"
+                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900");
+
+        return $"{baseClass} {activeClass}";
+    }
+
+    private void Navigate() => Nav.NavigateTo(Href);
+}

@@ -1,0 +1,106 @@
+﻿@using TelemedApp.Domain.Entities
+@using TelemedApp.UI.Client.Models
+@inject IJSRuntime JS
+@namespace TelemedApp.UI.Client.Shared.Components.Modals
+
+@if (Visible)
+{
+    <div class="fixed inset-0 z-40 flex items-center justify-center">
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-200"
+             @onclick="CloseAsync">
+        </div>
+
+        <!-- Modal Panel -->
+        <div class="@BuildClasses()"
+             @ref="modalRef"
+             tabindex="0">
+
+            <!-- Header -->
+            <div class="mb-4 flex items-center justify-between gap-4">
+                @if (!string.IsNullOrWhiteSpace(Title))
+                {
+                    <h3 class="text-lg font-semibold leading-tight">@Title</h3>
+                }
+
+                <button @onclick="CloseAsync"
+                        class="text-xl leading-none opacity-70 transition hover:opacity-100">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="mt-1">
+                @ChildContent
+            </div>
+
+            <!-- Footer -->
+            @if (ShowCancel || ShowConfirm)
+            {
+                <div class="mt-6 flex justify-end gap-3">
+                    @if (ShowCancel)
+                    {
+                        <Button Variant="secondary" OnClick="CloseAsync">Cancel</Button>
+                    }
+
+                    @if (ShowConfirm)
+                    {
+                        <Button Variant="primary" OnClick="ConfirmAsync" Disabled="DisableConfirm">Confirm</Button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public ModalSize Size { get; set; } = ModalSize.Medium;
+
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+
+    [Parameter] public bool ShowCancel { get; set; } = true;
+    [Parameter] public bool ShowConfirm { get; set; } = true;
+    [Parameter] public bool DisableConfirm { get; set; }
+
+    private ElementReference modalRef;
+
+    private string SizeClass => Size switch
+    {
+        ModalSize.Small => "max-w-sm",
+        ModalSize.Medium => "max-w-md",
+        ModalSize.Large => "max-w-lg",
+        ModalSize.ExtraLarge => "max-w-2xl",
+        ModalSize.Fullscreen => "w-full h-full max-w-none rounded-none",
+        _ => "max-w-md"
+    };
+
+    private string BuildClasses() =>
+        $"relative z-50 w-full {SizeClass} rounded-xl p-6 shadow-lg " +
+        "transition-all duration-200 scale-100 opacity-100 " +
+        (IsDark ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900");
+
+    private async Task CloseAsync()
+    {
+        if (Visible)
+        {
+            Visible = false;
+            await VisibleChanged.InvokeAsync(false);
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    private async Task ConfirmAsync()
+    {
+        await OnConfirm.InvokeAsync();
+        await CloseAsync();
+    }
+}

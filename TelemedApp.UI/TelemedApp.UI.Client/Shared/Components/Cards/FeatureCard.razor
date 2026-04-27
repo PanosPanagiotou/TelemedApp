@@ -1,0 +1,22 @@
+﻿@using TelemedApp.UI.Client.Shared.Components.Cards
+
+<Card Variant="default" CssClass="gap-4">
+
+    <CardHeader Variant="tight">
+        <div class="text-3xl text-blue-600 dark:text-blue-400">
+            <i class="@Icon"></i>
+        </div>
+    </CardHeader>
+
+    <CardBody Variant="tight">
+        <CardTitle Size="lg">@Title</CardTitle>
+        <CardDescription Variant="default">@Description</CardDescription>
+    </CardBody>
+
+</Card>
+
+@code {
+    [Parameter] public string Icon { get; set; } = "";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Description { get; set; } = "";
+}

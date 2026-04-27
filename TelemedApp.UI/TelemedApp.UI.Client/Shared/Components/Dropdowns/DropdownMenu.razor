@@ -1,0 +1,60 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Dropdowns
+
+@if (Parent?.Open == true)
+{
+    <div id="@MenuId" class="@MenuClasses" style="@MenuStyle">
+        @ChildContent
+    </div>
+}
+
+@code {
+    [Inject] IJSRuntime JS { get; set; } = default!;
+
+    [CascadingParameter] public Dropdown? Parent { get; set; }
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string MenuId { get; set; } = "menu-" + Guid.NewGuid().ToString("N");
+    private string MenuStyle { get; set; } = "";
+    private string Vertical { get; set; } = "down";
+    private string Horizontal { get; set; } = "right";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Parent?.Open == true)
+        {
+            var result = await JS.InvokeAsync<Alignment>("dropdown.autoAlign", Parent.TriggerId, MenuId);
+
+            Vertical = result.vertical;
+            Horizontal = result.horizontal;
+
+            MenuStyle = Vertical == "down"
+                ? "top: 100%;"
+                : "bottom: 100%;";
+
+            MenuStyle += Horizontal == "right"
+                ? "right: 0;"
+                : "left: 0;";
+
+            StateHasChanged();
+        }
+    }
+
+    private string MenuClasses =>
+        $"absolute mt-2 w-48 rounded-lg border z-50 animate-scale-fade {OriginClass} shadow-lg p-1 " +
+        (IsDark
+            ? "bg-gray-900 border-gray-700 shadow-black/30 text-gray-100"
+            : "bg-white border-gray-200 shadow-black/10 text-gray-900");
+
+    private string OriginClass =>
+        Vertical == "down"
+            ? "origin-top"
+            : "origin-bottom";
+
+    private class Alignment
+    {
+        public string vertical { get; set; } = "down";
+        public string horizontal { get; set; } = "right";
+    }
+}

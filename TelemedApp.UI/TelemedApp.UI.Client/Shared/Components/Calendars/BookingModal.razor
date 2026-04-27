@@ -1,0 +1,49 @@
+﻿@using TelemedApp.Application.DTOs
+@using TelemedApp.Domain.Entities
+@using TelemedApp.UI.Client.Models
+<div class="modal-overlay" @onclick="Close"></div>
+
+<div class="modal-container">
+    <h4 class="text-lg font-semibold">
+        Book appointment — @Date.ToString("D")
+    </h4>
+
+    <div class="mt-4 space-y-3">
+        <input class="input" placeholder="Patient name" @bind="Patient" />
+        <input class="input" placeholder="Doctor" @bind="Doctor" />
+        <input type="time" class="input" @bind="Time" />
+        <textarea class="input" placeholder="Notes" @bind="Notes"></textarea>
+    </div>
+
+    <div class="mt-6 flex justify-end gap-2">
+        <Button Variant="secondary" OnClick="Close">Cancel</Button>
+        <Button Variant="primary" OnClick="Confirm">Confirm</Button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public DateTime Date { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<AppointmentDto> OnConfirm { get; set; }
+
+    string Patient = "";
+    string Doctor = "";
+    TimeOnly Time = new(9, 0);
+    string Notes = "";
+
+    void Close() => OnClose.InvokeAsync();
+
+    async Task Confirm()
+    {
+        var ap = new AppointmentDto
+        {
+            PatientName = string.IsNullOrWhiteSpace(Patient) ? "Unknown" : Patient,
+            DoctorName = string.IsNullOrWhiteSpace(Doctor) ? "TBD" : Doctor,
+            ScheduledAt = Date.Date + Time.ToTimeSpan(),
+            Notes = Notes
+        };
+
+        await OnConfirm.InvokeAsync(ap);
+        await OnClose.InvokeAsync();
+    }
+}

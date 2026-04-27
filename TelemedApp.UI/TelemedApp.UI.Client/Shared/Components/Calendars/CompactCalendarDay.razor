@@ -1,0 +1,47 @@
+﻿@using TelemedApp.Application.DTOs
+@using TelemedApp.Domain.Entities
+@using TelemedApp.UI.Client.Models
+
+<div class="compact-day">
+    <div class="flex items-center justify-between">
+        <div class="text-xs font-semibold">@Date.ToString("ddd dd")</div>
+        <div class="text-[10px] text-gray-400">@Date.ToString("MMM")</div>
+    </div>
+
+    <div class="mt-1 space-y-1">
+        @if (Appointments?.Any() == true)
+        {
+            @foreach (var ap in Appointments.Take(3))
+            {
+                <CompactAppointmentChip AppointmentDto="ap"
+                                        OnClick="() => OnAppointmentClick.InvokeAsync(ap)" />
+            }
+
+            @if (Appointments.Count() > 3)
+            {
+                <div class="text-[11px] text-gray-400">
+                    +@(Appointments.Count() - 3) more
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-[11px] text-gray-500">No appointments</div>
+        }
+    </div>
+
+    <div class="mt-2">
+        <Button Variant="success" Size="sm" FullWidth="true"
+                OnClick="() => OnBook.InvokeAsync(Date)">
+            Book
+        </Button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public DateTime Date { get; set; }
+    [Parameter] public IEnumerable<AppointmentDto>? Appointments { get; set; }
+
+    [Parameter] public EventCallback<AppointmentDto> OnAppointmentClick { get; set; }
+    [Parameter] public EventCallback<DateTime> OnBook { get; set; }
+}

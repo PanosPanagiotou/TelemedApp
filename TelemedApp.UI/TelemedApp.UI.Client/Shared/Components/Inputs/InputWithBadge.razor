@@ -1,0 +1,47 @@
+﻿@inherits InputBase
+
+<div class="flex flex-col gap-1">
+
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="text-sm font-medium @(IsDark ? "text-gray-200" : "text-gray-700")">
+            @Label
+        </label>
+    }
+
+    <div class="relative">
+
+        <input @bind="Value"
+               @bind:event="oninput"
+               type="@Type"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               class="@BuildBadgeClasses()" />
+
+        <span class="absolute inset-y-0 right-3 flex items-center">
+            @Badge
+        </span>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(HelperText))
+    {
+        <span class="text-xs @(IsDark ? "text-gray-400" : "text-gray-600")">
+            @HelperText
+        </span>
+    }
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Placeholder { get; set; } = "";
+    [Parameter] public string Type { get; set; } = "text";
+    [Parameter] public string HelperText { get; set; } = "";
+
+    [Parameter] public RenderFragment? Badge { get; set; }
+
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private string BuildBadgeClasses()
+        => $"{BuildClasses()} pr-16";
+}

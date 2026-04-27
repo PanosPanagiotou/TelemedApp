@@ -1,0 +1,74 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Toast
+
+<div class="@WrapperClasses" @onclick="OnClose">
+    <div class="flex items-start gap-3">
+
+        <!-- Icon -->
+        <div class="@IconWrapperClasses">
+            @if (IconOverride != null)
+            {
+                <i class="@IconOverride text-lg"></i>
+            }
+            else
+            {
+                <div class="@IconClasses"></div>
+            }
+        </div>
+
+        <!-- Message + Action -->
+        <div class="flex-1 text-sm leading-relaxed">
+            @Message
+
+            @if (ActionLabel != null)
+            {
+                <button class="ml-2 text-xs text-blue-600 underline dark:text-blue-400"
+                        @onclick="InvokeAction">
+                    @ActionLabel
+                </button>
+            }
+        </div>
+
+        <!-- Close -->
+        <button class="opacity-60 transition hover:opacity-100"
+                @onclick="OnClose">
+            ✕
+        </button>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public ToastType Type { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    [Parameter] public string? ActionLabel { get; set; }
+    [Parameter] public Action? Action { get; set; }
+    [Parameter] public string? IconOverride { get; set; }
+
+    private async Task InvokeAction()
+    {
+        Action?.Invoke();
+        await OnClose.InvokeAsync();
+    }
+
+    private string WrapperClasses =>
+        "w-72 px-4 py-3 rounded-lg border shadow-lg backdrop-blur-md animate-toast-enter cursor-pointer " +
+        (IsDark
+            ? "bg-gray-900/80 border-gray-700 text-gray-100"
+            : "bg-white/80 border-gray-200 text-gray-900");
+
+    private string IconWrapperClasses =>
+        "flex items-center justify-center mt-0.5";
+
+    private string IconClasses =>
+        "w-3 h-3 rounded-full " + Type switch
+        {
+            ToastType.Success => "bg-green-500",
+            ToastType.Error => "bg-red-500",
+            ToastType.Info => "bg-blue-500",
+            ToastType.Warning => "bg-yellow-500",
+            _ => "bg-gray-400"
+        };
+}
