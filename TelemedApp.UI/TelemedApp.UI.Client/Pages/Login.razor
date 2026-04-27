@@ -1,0 +1,89 @@
+﻿@page "/login"
+@using TelemedApp.UI.Client.Auth
+@using TelemedApp.UI.Client.Services
+@inject AuthService Auth
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject CustomAuthStateProvider AuthStateProvider
+
+<div class="mt-24 flex items-center justify-center px-4 py-16 md:mt-32">
+
+    <div class="animate-scale-fade w-full max-w-md rounded-2xl
+                border border-gray-200/60 bg-white/80
+                p-10 shadow-2xl
+                backdrop-blur-xl dark:border-gray-700/40 dark:bg-gray-900/40">
+
+        <h2 class="text-center text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
+            Welcome Back
+        </h2>
+
+        <p class="mb-8 mt-2 text-center text-gray-600 dark:text-gray-300">
+            Sign in to your account
+        </p>
+
+        <div class="space-y-5">
+
+            <input @bind="Email"
+                   placeholder="Email"
+                   class="w-full rounded-xl border border-gray-300/80 bg-white/90
+                          px-4 py-3 text-gray-900
+                          backdrop-blur-sm transition-all focus:border-indigo-500 focus:ring-2
+                          focus:ring-indigo-500 dark:border-gray-600/60 dark:bg-gray-800/60
+                          dark:text-gray-100" />
+
+            <input @bind="Password"
+                   type="password"
+                   placeholder="Password"
+                   class="w-full rounded-xl border border-gray-300/80 bg-white/90
+                          px-4 py-3 text-gray-900
+                          backdrop-blur-sm transition-all focus:border-indigo-500 focus:ring-2
+                          focus:ring-indigo-500 dark:border-gray-600/60 dark:bg-gray-800/60
+                          dark:text-gray-100" />
+
+            <AsyncButton Variant="accent"
+                         Size="lg"
+                         FullWidth="true"
+                         OnClick="DoLogin">
+                Login
+            </AsyncButton>
+
+        </div>
+
+        @if (!string.IsNullOrEmpty(Error))
+        {
+            <p class="animate-fadeIn mt-5 text-center text-red-600 dark:text-red-400">
+                @Error
+            </p>
+        }
+    </div>
+</div>
+
+@code {
+    string Email = "";
+    string Password = "";
+    string Error = "";
+
+    async Task DoLogin()
+    {
+        Error = "";
+
+        var result = await Auth.Login(Email, Password);
+
+        if (!result.Success || string.IsNullOrWhiteSpace(result.Token))
+        {
+            Error = result.Errors?.FirstOrDefault() ?? "Invalid email or password.";
+            return;
+        }
+
+        // Store tokens
+        await JS.InvokeVoidAsync("sessionStorage.setItem", "authToken", result.Token!);
+        await JS.InvokeVoidAsync("sessionStorage.setItem", "refreshToken", result.RefreshToken!);
+
+        // Update auth state
+        var user = Auth.ParseToken(result.Token!);
+        await AuthStateProvider.SetToken(result.Token!);
+        AuthStateProvider.SetUser(user);
+
+        Nav.NavigateTo("/");
+    }
+}

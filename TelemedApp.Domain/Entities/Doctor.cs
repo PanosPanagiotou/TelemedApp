@@ -1,4 +1,6 @@
-﻿namespace TelemedApp.Domain.Entities
+﻿using TelemedApp.Domain.Enums;
+
+namespace TelemedApp.Domain.Entities
 {
     public class Doctor
     {
@@ -6,7 +8,7 @@
         public string FullName { get; set; } = string.Empty;
         public string Specialty { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-
+        public DoctorStatus Status { get; set; } = DoctorStatus.Active;
         public ICollection<Appointment> Appointments { get; set; } = [];
     }
 }

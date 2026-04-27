@@ -1,0 +1,170 @@
+﻿@page "/dashboard"
+@using TelemedApp.Application.DTOs
+@using TelemedApp.Domain.Entities
+@using TelemedApp.Domain.Enums
+@using TelemedApp.UI.Client.Models
+@using TelemedApp.UI.Client.Services
+@using TelemedApp.UI.Client.Shared.Components.Buttons
+@using TelemedApp.UI.Client.Shared.Components.Cards
+@using TelemedApp.UI.Client.Shared.Components.Metrics
+@inject PermissionGuard Permission
+@inject AppointmentsService AppointmentsService
+
+<DashboardPage Header="@DashboardHeader">
+
+    <!-- Metrics Grid -->
+    <DashboardMetricsGrid>
+
+        @if (Permission.Has("Doctors.View"))
+        {
+            <TotalDoctorsCard Count="ActiveDoctors + InactiveDoctors + FormerDoctors"
+                              ActiveDocCount="ActiveDoctors"
+                              InactiveDocCount="InactiveDoctors"
+                              FormerDocCount="FormerDoctors"
+                              Compact="true" />
+        }
+
+        @if (Permission.Has("Appointments.View"))
+        {
+            <TotalAppointmentsCard CountAll="AppointmentsThisPeriod"
+                                   CountCompleted="CompletedAppointments"
+                                   CountCancelled="CancelledAppointments"
+                                   Compact="true" />
+
+            <AppointmentsTodayCard Count="AppointmentsToday" Compact="true" />
+        }
+
+        @if (Permission.Has("LabResults.View"))
+        {
+            <PendingLabResultsCard Count="PendingLabResults" Compact="true" />
+        }
+
+        @if (Permission.Has("Finance.View"))
+        {
+            <RevenueCard Amount="RevenueThisPeriod" Currency="EUR" Compact="true" />
+        }
+
+    </DashboardMetricsGrid>
+
+    <div class="my-12"></div>
+
+    <!-- Two-column section -->
+    <section class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+        <!-- Upcoming Appointments -->
+        @if (Permission.Has("Appointments.View"))
+        {
+            <Card Variant="default">
+                <CardHeader>
+                    <CardTitle Size="lg">Upcoming Appointments</CardTitle>
+                </CardHeader>
+
+                <CardBody Variant="loose">
+                    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach (var appt in Appointments)
+                        {
+                            <li class="flex justify-between py-3">
+                                <span>@appt.PatientName → @appt.DoctorName</span>
+                                <span class="text-gray-500 dark:text-gray-400">
+                                    @appt.Date.ToString("HH:mm")
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                </CardBody>
+            </Card>
+        }
+
+        <!-- Quick Actions -->
+        <Card Variant="default">
+            <CardHeader>
+                <CardTitle Size="lg">Quick Actions</CardTitle>
+            </CardHeader>
+
+            <CardBody Variant="loose">
+
+                @if (Permission.Has("Patients.Create"))
+                {
+                    <Button Variant="primary">Add New Patient</Button>
+                }
+
+                @if (Permission.Has("Appointments.Create"))
+                {
+                    <Button Variant="primary">Schedule Appointment</Button>
+                }
+
+                @if (Permission.Has("Reports.View"))
+                {
+                    <Button Variant="accent">View Reports</Button>
+                }
+
+            </CardBody>
+        </Card>
+
+    </section>
+
+    <div class="my-12"></div>
+
+    <!-- Calendar Section -->
+    @if (Permission.Has("Appointments.View"))
+    {
+        <section class="mb-24">
+            <Card Variant="default">
+                <CardHeader>
+                    <CardTitle Size="lg">Appointments</CardTitle>
+                </CardHeader>
+
+                <CardBody Variant="loose">
+                    <CalendarView Appointments="Appointments"
+                                  OnAppointmentCreated="HandleNewAppointment" />
+                </CardBody>
+            </Card>
+        </section>
+    }
+
+</DashboardPage>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    RenderFragment DashboardHeader => @<DashboardHeader Title="Dashboard"
+                     Subtitle="Overview of your medical operations"
+                     Icon="fa-solid fa-chart-line" />;
+
+    // Mock data (will replace with DB)
+    int ActiveDoctors = 32;
+    int InactiveDoctors = 4;
+    int FormerDoctors = 2;
+
+    int AppointmentsThisPeriod = 320;
+    int CompletedAppointments = 280;
+    int CancelledAppointments = 40;
+
+    int AppointmentsToday = 87;
+    int PendingLabResults = 14;
+
+    decimal RevenueThisPeriod = 12540.00m;
+
+    List<AppointmentViewModel> Appointments = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var dtos = await AppointmentsService.GetUpcoming(7) ?? Enumerable.Empty<AppointmentDto>();
+
+        Appointments = dtos.Select(a => new AppointmentViewModel
+        {
+            Id = a.Id,
+            PatientName = a.PatientName,
+            DoctorName = a.DoctorName,
+            Date = a.ScheduledAt,
+            Status = a.Status,
+            Notes = a.Notes
+        }).ToList();
+    }
+
+    private Task HandleNewAppointment(AppointmentViewModel ap)
+    {
+        Appointments.Add(ap);
+        return Task.CompletedTask;
+    }
+}

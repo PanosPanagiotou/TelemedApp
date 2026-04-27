@@ -1,0 +1,48 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Toast
+@inject ToastService ToastService
+@using TelemedApp.UI.Client.Services
+@implements IDisposable
+
+<div class="z-[9999] pointer-events-none fixed bottom-4 right-4 flex flex-col gap-3" style="width: max-content; height: max-content;">
+    @foreach (var toast in Toasts)
+    {
+        <div class="pointer-events-auto">
+            <Toast Message="@toast.Message"
+                   Type="@toast.Type"
+                   OnClose="() => Remove(toast)" />
+        </div>
+    }
+</div>
+
+@code {
+    private List<ToastMessage> Toasts = new();
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += Add;
+    }
+
+    private void Add(ToastMessage toast)
+    {
+        Toasts.Add(toast);
+        StateHasChanged();
+        _ = AutoRemove(toast);
+    }
+
+    private async Task AutoRemove(ToastMessage toast)
+    {
+        await Task.Delay(toast.DurationMs);
+        Remove(toast);
+    }
+
+    private void Remove(ToastMessage toast)
+    {
+        Toasts.Remove(toast);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= Add;
+    }
+}

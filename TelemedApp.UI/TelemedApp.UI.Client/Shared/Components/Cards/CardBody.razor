@@ -1,0 +1,23 @@
+﻿<div class="@BuildClasses()">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public string Variant { get; set; } = "default";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string BuildClasses()
+    {
+        var baseClass = "flex flex-col";
+
+        var variantClass = Variant switch
+        {
+            "tight" => "gap-2",
+            "loose" => "gap-6",
+            _ => "gap-4"
+        };
+
+        return $"{baseClass} {variantClass} {CssClass}".Trim();
+    }
+}

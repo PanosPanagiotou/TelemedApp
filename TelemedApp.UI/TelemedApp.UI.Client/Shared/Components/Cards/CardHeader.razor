@@ -1,0 +1,23 @@
+﻿<div class="@BuildClasses()">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public string Variant { get; set; } = "default"; // default, tight, loose
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string BuildClasses()
+    {
+        var baseClass = "flex items-center justify-between";
+
+        var variantClass = Variant switch
+        {
+            "tight" => "mb-2",
+            "loose" => "mb-6",
+            _ => "mb-4"
+        };
+
+        return $"{baseClass} {variantClass} {CssClass}".Trim();
+    }
+}

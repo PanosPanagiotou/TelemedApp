@@ -1,0 +1,15 @@
+﻿<div class="@GroupClasses">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public bool Overlap { get; set; } = false;
+    [Parameter] public string Gap { get; set; } = "2"; // 1,2,3,4
+    [Parameter] public bool Wrap { get; set; } = true;
+
+    private string GroupClasses =>
+        $"{(Wrap ? "flex flex-wrap" : "flex")} " +
+        $"{(Overlap ? "-space-x-2" : $"gap-{Gap}")}";
+}

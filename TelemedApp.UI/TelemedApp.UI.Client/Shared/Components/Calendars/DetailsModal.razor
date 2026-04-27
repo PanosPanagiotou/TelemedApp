@@ -1,0 +1,22 @@
+﻿@using TelemedApp.Application.DTOs
+@using TelemedApp.Domain.Entities
+@using TelemedApp.UI.Client.Models
+<div class="modal-overlay" @onclick="Close"></div>
+
+<div class="modal-container">
+    <h4 class="text-lg font-semibold">@Appointment.PatientName</h4>
+    <div class="text-sm text-gray-500">@Appointment.ScheduledAt.ToString("f")</div>
+    <div class="mt-2">Doctor: <strong>@Appointment.DoctorName</strong></div>
+    <div class="mt-2 text-sm">@Appointment.Notes</div>
+
+    <div class="mt-6 flex justify-end">
+        <Button Variant="secondary" OnClick="Close">Close</Button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public AppointmentDto Appointment { get; set; } = default!;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    void Close() => OnClose.InvokeAsync();
+}

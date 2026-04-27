@@ -1,0 +1,39 @@
+﻿@using TelemedApp.Application.DTOs
+@using TelemedApp.Domain.Entities
+@using TelemedApp.UI.Client.Models
+
+<div class="compact-month-cell @(Cell.IsCurrentMonth ? "" : "opacity-50")">
+
+    <div class="flex items-center justify-between">
+        <div class="text-xs font-semibold">@Cell.Date.Day</div>
+        <div class="text-[10px] text-gray-400">@Cell.Appointments.Count()</div>
+    </div>
+
+    <div class="mt-1 space-y-1">
+        @foreach (var ap in Cell.Appointments.Take(2))
+        {
+            <CompactAppointmentChip Appointment="ap"
+                                    OnClick="() => OnAppointmentClick.InvokeAsync(ap)" />
+        }
+
+        @if (Cell.Appointments.Count() > 2)
+        {
+            <div class="text-[11px] text-gray-400">
+                +@((Cell.Appointments.Count()) - 2) more
+            </div>
+        }
+    </div>
+
+    <div class="mt-1">
+        <Button Variant="success" Size="sm" FullWidth="true"
+                OnClick="() => OnBook.InvokeAsync(Cell.Date)">
+            Book
+        </Button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public dynamic Cell { get; set; } = default!;
+    [Parameter] public EventCallback<AppointmentDto> OnAppointmentClick { get; set; }
+    [Parameter] public EventCallback<DateTime> OnBook { get; set; }
+}

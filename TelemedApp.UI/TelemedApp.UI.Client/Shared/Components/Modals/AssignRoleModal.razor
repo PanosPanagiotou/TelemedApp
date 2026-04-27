@@ -1,0 +1,37 @@
+﻿@using TelemedApp.UI.Client.Models
+@using TelemedApp.UI.Client.Services
+@inject AuthService AuthService
+
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="w-96 rounded bg-white p-6 shadow-lg dark:bg-gray-900">
+
+        <h2 class="mb-4 text-lg font-semibold">Assign Role</h2>
+
+        <select @bind="SelectedRole" class="mb-4 w-full rounded border p-2">
+            @foreach (var role in AvailableRoles)
+            {
+                <option value="@role">@role</option>
+            }
+        </select>
+
+        <div class="flex justify-end gap-2">
+            <Button Variant="secondary" OnClick="OnClose">Cancel</Button>
+            <Button Variant="primary" OnClick="Assign">Assign</Button>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [Parameter] public UserViewModel User { get; set; } = default!;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    string SelectedRole = "";
+    List<string> AvailableRoles = new() { "Admin", "Doctor", "Nurse", "Patient", "Support", "Billing" };
+
+    async Task Assign()
+    {
+        await AuthService.AssignRole(User.Id, SelectedRole);
+        await OnClose.InvokeAsync();
+    }
+}

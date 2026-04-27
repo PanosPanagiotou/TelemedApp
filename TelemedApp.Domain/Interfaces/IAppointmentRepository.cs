@@ -2,8 +2,9 @@
 
 namespace TelemedApp.Domain.Interfaces
 {
-    public interface IAppointmentRepository : IRepository<Appointment> 
+    public interface IAppointmentRepository : IRepository<Appointment>
     {
+        Task<IEnumerable<Appointment>> GetUpcomingAsync(DateTime until);
         Task<IEnumerable<Appointment>> GetByDoctorIdAsync(Guid doctorId);
         Task<IEnumerable<Appointment>> GetByPatientIdAsync(Guid patientId);
         Task<bool> HasConflictAsync(Guid doctorId, DateTime start, DateTime end);

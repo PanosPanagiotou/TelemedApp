@@ -1,0 +1,15 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Dropdowns
+
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    internal bool Open { get; private set; }
+    internal string TriggerId { get; set; } = "";
+
+    internal void Toggle() => Open = !Open;
+    internal void Close() => Open = false;
+}

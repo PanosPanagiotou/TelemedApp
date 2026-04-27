@@ -1,0 +1,29 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Layout
+
+<div class="w-full px-6 py-8 lg:px-10">
+
+    @if (Header is not null)
+    {
+        <div class="mb-8">
+            @Header
+        </div>
+    }
+
+    @if (Actions is not null)
+    {
+        <div class="mb-6 flex flex-wrap gap-3">
+            @Actions
+        </div>
+    }
+
+    <div class="min-h-[300px]">
+        @ChildContent
+    </div>
+
+</div>
+
+@code {
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,31 @@
+﻿<p class="@BuildClasses()">
+    @ChildContent
+</p>
+
+@code {
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public string Variant { get; set; } = "default";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string BuildClasses()
+    {
+        var baseClass = "leading-relaxed";
+
+        var variantClass = Variant switch
+        {
+            "muted" =>
+                "text-sm text-gray-500 dark:text-gray-400",
+
+            "strong" =>
+                "text-sm text-gray-700 dark:text-gray-300 font-medium",
+
+            "subtle" =>
+                "text-xs text-gray-500 dark:text-gray-400",
+
+            _ => // default
+                "text-sm text-gray-600 dark:text-gray-300"
+        };
+
+        return $"{baseClass} {variantClass} {CssClass}".Trim();
+    }
+}

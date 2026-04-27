@@ -1,0 +1,30 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Navbars
+
+<div class="@NavbarClasses">
+    <div class="flex h-14 items-center justify-between px-4">
+
+        <!-- Left -->
+        <div class="flex items-center gap-3">
+            @LeftContent
+        </div>
+
+        <!-- Right -->
+        <div class="flex items-center gap-3">
+            @RightContent
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public RenderFragment? LeftContent { get; set; }
+    [Parameter] public RenderFragment? RightContent { get; set; }
+
+    private string NavbarClasses =>
+        "sticky top-0 z-30 border-b backdrop-blur-md supports-[backdrop-filter]:bg-white/70 " +
+        (IsDark
+            ? "bg-gray-900/70 border-gray-800"
+            : "bg-white/70 border-gray-200");
+}

@@ -1,0 +1,40 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Tabs
+
+<div class="@ContainerClasses">
+    @ChildContent
+</div>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter] public TabsStyle Style { get; set; } = TabsStyle.Underline;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    internal async Task SetValue(string newValue)
+    {
+        Value = newValue;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private string ContainerClasses =>
+        Style switch
+        {
+            TabsStyle.Underline =>
+                "flex border-b " +
+                (IsDark ? "border-gray-700" : "border-gray-200"),
+
+            TabsStyle.Pill =>
+                "flex gap-2 p-1 rounded-lg " +
+                (IsDark ? "bg-gray-800" : "bg-gray-100"),
+
+            TabsStyle.Segmented =>
+                "flex gap-1 p-1 rounded-lg border " +
+                (IsDark ? "bg-gray-900 border-gray-700" : "bg-gray-50 border-gray-200"),
+
+            _ => ""
+        };
+}

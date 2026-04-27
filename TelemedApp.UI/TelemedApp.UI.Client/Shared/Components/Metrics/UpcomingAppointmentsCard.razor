@@ -1,0 +1,62 @@
+﻿@using TelemedApp.Application.DTOs
+@using TelemedApp.Domain.Entities
+@using TelemedApp.UI.Client.Shared.Components.Metrics
+@using TelemedApp.UI.Client.Models
+
+<MetricCard Title="Upcoming Appointments"
+            Value="@UpcomingToday.ToString("N0")"
+            Subtitle="@EffectiveSubtitle"
+            Trend="@Trend"
+            Icon="fa-solid fa-clock"
+            Compact="@Compact"
+            Clickable="@Clickable"
+            OnClick="@OnClick" />
+
+@code {
+    [Parameter] public IEnumerable<AppointmentDto>? Appointments { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+
+    // NEW
+    [Parameter] public bool Compact { get; set; } = false;
+    [Parameter] public bool Clickable { get; set; } = false;
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private List<AppointmentDto> TodayAppointments = new();
+    private AppointmentDto? NextAppointment;
+    private int CountThisHour;
+
+    public int UpcomingToday => TodayAppointments.Count;
+
+    protected override void OnParametersSet()
+    {
+        var now = DateTime.Now;
+        var today = now.Date;
+
+        var list = Appointments?.ToList() ?? new();
+
+        TodayAppointments = list
+            .Where(a => a.ScheduledAt.Date == today && a.ScheduledAt > now)
+            .OrderBy(a => a.ScheduledAt)
+            .ToList();
+
+        NextAppointment = TodayAppointments.FirstOrDefault();
+
+        CountThisHour = TodayAppointments
+            .Count(a => a.ScheduledAt.Hour == now.Hour);
+    }
+
+    public string EffectiveSubtitle =>
+        !string.IsNullOrWhiteSpace(Subtitle)
+            ? Subtitle
+            : NextAppointment == null
+                ? "No more appointments today"
+                : $"{NextAppointment.ScheduledAt:HH:mm} · {CountThisHour} this hour";
+
+    public string Trend =>
+        UpcomingToday switch
+        {
+            > 10 => "up",
+            < 3 => "down",
+            _ => ""
+        };
+}

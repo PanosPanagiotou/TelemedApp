@@ -1,0 +1,92 @@
+﻿@page "/admin/users"
+@using TelemedApp.UI.Client.Services
+@using TelemedApp.UI.Client.Models
+@inject PermissionGuard Permission
+@inject AuthService AuthService
+@inject NavigationManager Nav
+
+<DashboardPage Header="@Header">
+
+    @if (!Permission.Has("Admin.ManageUsers"))
+    {
+        <NotAuthorizedPage />
+        return;
+    }
+
+    <Card Variant="default">
+        <CardHeader>
+            <CardTitle Size="lg">Users</CardTitle>
+        </CardHeader>
+
+        <CardBody Variant="loose">
+
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b">
+                        <th class="py-2">Email</th>
+                        <th class="py-2">Full Name</th>
+                        <th class="py-2">Roles</th>
+                        <th class="py-2"></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var user in UserList)
+                    {
+                        <tr class="border-b">
+                            <td class="py-2">@user.Email</td>
+                            <td class="py-2">@user.FullName</td>
+                            <td class="py-2">@string.Join(", ", user.Roles)</td>
+                            <td class="py-2 text-right">
+                                @if (Permission.Has("Admin.AssignRoles"))
+                                {
+                                    <Button Variant="primary" OnClick="@(() => OpenAssignRoleModal(user))">
+                                        Assign Role
+                                    </Button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </CardBody>
+    </Card>
+
+    @if (IsAssignRoleModalOpen)
+    {
+        <AssignRoleModal User="SelectedUser" OnClose="CloseAssignRoleModal" />
+    }
+
+</DashboardPage>
+
+@code {
+    RenderFragment Header => @<DashboardHeader Title="Admin Panel"
+                     Subtitle="Manage users and roles"
+                     Icon="fa-solid fa-user-shield" />;
+
+    List<UserViewModel> UserList = new();
+
+    bool IsAssignRoleModalOpen = false;
+    UserViewModel? SelectedUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Permission.Has("Admin.ManageUsers"))
+            return;
+
+        UserList = await AuthService.GetUsers();
+    }
+
+    void OpenAssignRoleModal(UserViewModel user)
+    {
+        SelectedUser = user;
+        IsAssignRoleModalOpen = true;
+    }
+
+    void CloseAssignRoleModal()
+    {
+        IsAssignRoleModalOpen = false;
+        SelectedUser = null;
+    }
+}

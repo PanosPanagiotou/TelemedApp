@@ -1,0 +1,21 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Dropdowns
+
+@if (Parent?.Open == true)
+{
+    <div class="@MenuClasses">
+        @ChildContent
+    </div>
+}
+
+@code {
+    [CascadingParameter] public Dropdown? Parent { get; set; }
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string MenuClasses =>
+        "absolute right-0 mt-2 w-48 rounded-lg border z-50 animate-scale-fade origin-top shadow-lg p-1 " +
+        (IsDark
+            ? "bg-gray-900 border-gray-700 shadow-black/30 text-gray-100"
+            : "bg-white border-gray-200 shadow-black/10 text-gray-900");
+}

@@ -1,0 +1,100 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components
+@using TelemedApp.UI.Client.Shared.Components.Avatars
+@using TelemedApp.UI.Client.Shared.Components.Cards
+
+<Card Variant="default" CssClass="gap-6">
+
+    <!-- Header -->
+    <CardHeader Variant="loose">
+        <div class="flex items-center gap-4">
+
+            <Avatar Name="@Name" Size="AvatarSize.Lg" />
+
+            <div class="flex flex-col">
+                <CardTitle Size="lg">@Name</CardTitle>
+
+                <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+
+                    @if (!string.IsNullOrWhiteSpace(Specialty))
+                    {
+                        <span class="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs text-blue-700
+                                         dark:bg-blue-900 dark:text-blue-200">
+                            @Specialty
+                        </span>
+                    }
+
+                    @if (YearsExperience is not null)
+                    {
+                        <span>@YearsExperience yrs exp</span>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Status))
+                    {
+                        <span class="@StatusBadgeClass">@Status</span>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </CardHeader>
+
+    <!-- Body -->
+    <CardBody Variant="loose">
+
+        @if (!string.IsNullOrWhiteSpace(Email))
+        {
+            <div class="flex items-center gap-2 text-sm">
+                <i class="fa-solid fa-envelope text-gray-500"></i>
+                <span>@Email</span>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Phone))
+        {
+            <div class="flex items-center gap-2 text-sm">
+                <i class="fa-solid fa-phone text-gray-500"></i>
+                <span>@Phone</span>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Room))
+        {
+            <div class="flex items-center gap-2 text-sm">
+                <i class="fa-solid fa-door-open text-gray-500"></i>
+                <span>Office @Room</span>
+            </div>
+        }
+
+    </CardBody>
+
+    <!-- Footer -->
+    @if (Actions is not null)
+    {
+        <CardFooter Align="start">
+            <div class="flex flex-wrap gap-3">
+                @Actions
+            </div>
+        </CardFooter>
+    }
+
+</Card>
+
+@code {
+    [Parameter] public string Name { get; set; } = "";
+    [Parameter] public string? Specialty { get; set; }
+    [Parameter] public int? YearsExperience { get; set; }
+    [Parameter] public string? Email { get; set; }
+    [Parameter] public string? Phone { get; set; }
+    [Parameter] public string? Room { get; set; }
+    [Parameter] public string? Status { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    string StatusBadgeClass =>
+        Status?.ToLower() switch
+        {
+            "active" => "inline-block rounded-full bg-green-100 px-3 py-1 text-xs text-green-700 dark:bg-green-900 dark:text-green-200",
+            "inactive" => "inline-block rounded-full bg-gray-200 px-3 py-1 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+            "on leave" => "inline-block rounded-full bg-yellow-100 px-3 py-1 text-xs text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200",
+            _ => "inline-block rounded-full bg-blue-100 px-3 py-1 text-xs text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+        };
+}

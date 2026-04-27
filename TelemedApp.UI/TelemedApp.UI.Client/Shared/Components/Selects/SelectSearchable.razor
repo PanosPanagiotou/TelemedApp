@@ -1,0 +1,65 @@
+﻿@inherits SelectBase
+@using TelemedApp.UI.Client.Models
+
+<div class="flex flex-col gap-1">
+
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="text-sm font-medium @(IsDark ? "text-gray-200" : "text-gray-700")">
+            @Label
+        </label>
+    }
+
+    <button class="@TriggerClasses" @onclick="Toggle">
+        <span>@SelectedLabel</span>
+        <i class="fa fa-chevron-down ml-auto text-xs opacity-60"></i>
+    </button>
+
+    @if (Open)
+    {
+        <div class="@DropdownClasses">
+
+            <input value="@Search"
+                   @oninput="OnSearchInput"
+                   placeholder="Search…"
+                   class="@SearchClasses" />
+
+            <div class="max-h-60 overflow-y-auto">
+                @foreach (var option in FilteredOptions)
+                {
+                    <button class="@OptionClasses(Value, option.Value)"
+                            @onclick="() => SelectOption(option)">
+                        @option.Label
+                    </button>
+                }
+            </div>
+
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public List<SelectOption> Options { get; set; } = [];
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private IEnumerable<SelectOption> FilteredOptions =>
+        Options.Where(o => o.Label.Contains(Search, StringComparison.OrdinalIgnoreCase));
+
+    private string SelectedLabel =>
+        Options.FirstOrDefault(o => o.Value == Value)?.Label ?? "Select…";
+
+    private Task OnSearchInput(ChangeEventArgs e)
+    {
+        Search = e.Value?.ToString() ?? "";
+        return Task.CompletedTask;
+    }
+
+    private async Task SelectOption(SelectOption option)
+    {
+        Value = option.Value;
+        await ValueChanged.InvokeAsync(Value);
+        Close();
+    }
+}

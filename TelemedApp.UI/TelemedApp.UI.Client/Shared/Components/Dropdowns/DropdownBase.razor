@@ -1,0 +1,21 @@
+﻿@inherits ComponentBase
+@namespace TelemedApp.UI.Client.Shared.Components.Dropdowns
+
+<div class="relative inline-block" @onclick:stopPropagation="true">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected bool Open { get; set; }
+    protected bool Disabled { get; set; }
+
+    protected void Toggle()
+    {
+        if (!Disabled)
+            Open = !Open;
+    }
+
+    protected void Close() => Open = false;
+}

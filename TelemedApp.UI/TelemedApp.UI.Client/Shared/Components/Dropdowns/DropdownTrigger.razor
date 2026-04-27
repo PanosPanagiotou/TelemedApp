@@ -1,0 +1,24 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Dropdowns
+
+<button id="@TriggerId" class="@Classes" @onclick="Toggle">
+    @ChildContent
+</button>
+
+@code {
+    [CascadingParameter] public Dropdown? Parent { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Classes { get; set; } =
+        "px-3 py-2 rounded-md border text-sm transition hover:bg-gray-100 dark:hover:bg-gray-800";
+
+    private string TriggerId { get; set; } = "trigger-" + Guid.NewGuid().ToString("N");
+
+    private void Toggle()
+    {
+        if (Parent is not null)
+        {
+            Parent.TriggerId = TriggerId;
+            Parent.Toggle();
+        }
+    }
+}

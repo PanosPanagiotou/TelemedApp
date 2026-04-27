@@ -1,0 +1,17 @@
+﻿<div class="@WrapperClasses" title="@Tooltip">
+    @if (!string.IsNullOrWhiteSpace(Src))
+    {
+        <img src="@Src" alt="@Alt" class="@ImageClasses" @onload="OnImageLoaded" />
+    }
+    else
+    {
+        <div class="@FallbackClasses">
+            @FallbackContent
+        </div>
+    }
+
+    @if (ShowStatus)
+    {
+        <span class="@StatusClasses"></span>
+    }
+</div>

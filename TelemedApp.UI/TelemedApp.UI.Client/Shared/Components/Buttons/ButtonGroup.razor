@@ -1,0 +1,28 @@
+﻿<div class="@BuildClasses()">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Orientation { get; set; } = "horizontal";
+    [Parameter] public bool Shadow { get; set; } = false;
+    [Parameter] public string Rounded { get; set; } = "lg";
+
+    private string BuildClasses()
+    {
+        var baseClass = Orientation == "vertical"
+            ? "inline-flex flex-col divide-y divide-gray-300 dark:divide-gray-700"
+            : "inline-flex divide-x divide-gray-300 dark:divide-gray-700";
+
+        var roundedClass = Rounded switch
+        {
+            "md" => "rounded-md",
+            "full" => "rounded-full",
+            _ => "rounded-lg"
+        };
+
+        var shadowClass = Shadow ? "shadow-sm dark:shadow-gray-900/40" : "";
+
+        return $"{baseClass} {roundedClass} {shadowClass}".Trim();
+    }
+}

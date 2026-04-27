@@ -1,0 +1,100 @@
+﻿@inherits ComponentBase
+
+<div class="relative w-full" @onclick:stopPropagation="true">
+    @ChildContent
+</div>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    // VARIANTS: default, subtle, danger, success
+    [Parameter] public string Variant { get; set; } = "default";
+
+    // SIZES: sm, md, lg
+    [Parameter] public string Size { get; set; } = "md";
+
+    // ROUNDED: md, lg, full
+    [Parameter] public string Rounded { get; set; } = "lg";
+
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Error { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // Shared state for all Selects
+    protected bool Open { get; set; }
+    protected string Search { get; set; } = "";
+
+    protected void Toggle()
+    {
+        if (!Disabled)
+            Open = !Open;
+    }
+
+    protected void Close() => Open = false;
+
+    // Unified Trigger Classes
+    protected string TriggerClasses =>
+        $"{BaseClasses} {SizeClasses} {RoundedClasses} {VariantClasses} {DisabledClasses}";
+
+    // Unified Dropdown Classes
+    protected string DropdownClasses =>
+        "absolute left-0 right-0 mt-1 rounded-lg shadow-lg shadow-black/10 dark:shadow-black/30 " +
+        "border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 " +
+        "animate-scale-fade origin-top z-50";
+
+    protected string SearchClasses =>
+        "w-full border-b px-3 py-2 text-sm outline-none " +
+        (IsDark
+            ? "bg-gray-900 text-gray-100 border-gray-700"
+            : "bg-white text-gray-900 border-gray-200");
+
+    protected string OptionClasses(string? selectedValue, string optionValue) =>
+        "w-full text-left px-3 py-2 text-sm rounded-md transition " +
+        (optionValue == selectedValue
+            ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+            : (IsDark
+                ? "text-gray-200 hover:bg-gray-800"
+                : "text-gray-700 hover:bg-gray-100"));
+
+    private string BaseClasses =>
+        "w-full flex items-center gap-2 border px-3 py-2 text-left transition-all duration-200 " +
+        "focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 " +
+        "disabled:opacity-50 disabled:cursor-not-allowed";
+
+    private string SizeClasses => Size switch
+    {
+        "sm" => "text-sm py-1 px-2",
+        "lg" => "text-base py-3 px-4",
+        _ => "text-sm py-2 px-3"
+    };
+
+    private string RoundedClasses => Rounded switch
+    {
+        "md" => "rounded-md",
+        "full" => "rounded-full",
+        _ => "rounded-lg"
+    };
+
+    private string VariantClasses => Variant switch
+    {
+        "danger" => Error
+            ? "border-red-500 focus:ring-red-400"
+            : "border-red-400 focus:ring-red-300",
+
+        "success" => "border-green-500 focus:ring-green-400",
+
+        "subtle" => IsDark
+            ? "border-gray-700 bg-gray-800 text-gray-100"
+            : "border-gray-300 bg-gray-50 text-gray-900",
+
+        _ => Error
+            ? "border-red-500 focus:ring-red-400"
+            : IsDark
+                ? "border-gray-700 bg-gray-800 text-gray-100"
+                : "border-gray-300 bg-white text-gray-900"
+    };
+
+    private string DisabledClasses =>
+        Disabled ? "opacity-50 cursor-not-allowed" : "";
+}

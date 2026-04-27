@@ -1,0 +1,33 @@
+﻿@using TelemedApp.UI.Client.Shared.Components.Metrics
+
+<MetricCard Title="Appointments Today"
+            Value="@Count.ToString("N0")"
+            Subtitle="@EffectiveSubtitle"
+            Trend="@Trend"
+            Icon="fa-solid fa-calendar-day"
+            Compact="@Compact"
+            Clickable="@Clickable"
+            OnClick="@OnClick" />
+
+@code {
+    [Parameter] public int Count { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+
+    // NEW
+    [Parameter] public bool Compact { get; set; } = false;
+    [Parameter] public bool Clickable { get; set; } = false;
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    public string EffectiveSubtitle =>
+        !string.IsNullOrWhiteSpace(Subtitle)
+            ? Subtitle
+            : "Scheduled for today";
+
+    public string Trend =>
+        Count switch
+        {
+            > 20 => "up",
+            < 5 => "down",
+            _ => ""
+        };
+}

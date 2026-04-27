@@ -1,0 +1,37 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Layout
+
+<div class="mb-8 flex flex-col gap-4">
+
+    <div class="flex items-center gap-3">
+        @if (!string.IsNullOrWhiteSpace(Icon))
+        {
+            <i class="@Icon text-2xl text-blue-600 dark:text-blue-400"></i>
+        }
+
+        <h2 class="text-2xl font-semibold tracking-tight">
+            @Title
+        </h2>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Subtitle))
+    {
+        <p class="text-lg text-gray-600 dark:text-gray-600">
+            @Subtitle
+        </p>
+    }
+
+    @if (Actions is not null)
+    {
+        <div class="flex flex-wrap gap-3">
+            @Actions
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+}

@@ -1,0 +1,68 @@
+﻿@page "/admin/features"
+@using TelemedApp.UI.Client.Services
+@using TelemedApp.UI.Client.Models
+@inject PermissionGuard Permission
+@inject AuthService AuthService
+
+<DashboardPage Header="@Header">
+
+    @if (!Permission.Has("Admin.Roles.Manage"))
+    {
+        <NotAuthorizedPage />
+        return;
+    }
+
+    <Card Variant="default">
+        <CardHeader>
+            <CardTitle Size="lg">Feature Flags</CardTitle>
+        </CardHeader>
+
+        <CardBody Variant="loose">
+
+            <div class="space-y-4">
+
+                @foreach (var feature in FeatureList)
+                {
+                    <label class="flex items-center gap-3">
+                        <input type="checkbox"
+                               checked="@feature.Enabled"
+                               @onchange="e => Toggle(feature, e.Value!)" />
+                        <span>@feature.Name</span>
+                    </label>
+                }
+
+            </div>
+
+            <div class="mt-6 text-right">
+                <Button Variant="primary" OnClick="Save">
+                    Save Changes
+                </Button>
+            </div>
+
+        </CardBody>
+    </Card>
+
+</DashboardPage>
+
+@code {
+    RenderFragment Header => @<DashboardHeader Title="Feature Flags"
+                                               Subtitle="Enable or disable system features"
+                                               Icon="fa-solid fa-flask" />;
+
+    List<FeatureFlagViewModel> FeatureList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        FeatureList = await AuthService.GetFeatureFlags();
+    }
+
+    void Toggle(FeatureFlagViewModel feature, object value)
+    {
+        feature.Enabled = (bool)value;
+    }
+
+    async Task Save()
+    {
+        await AuthService.UpdateFeatureFlags(FeatureList);
+    }
+}

@@ -11,13 +11,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.Domain", "Teleme
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.Identity", "TelemedApp.Identity\TelemedApp.Identity.csproj", "{D481EA90-CB88-1D9D-3AEF-A49B03B19787}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.Infrastracture", "TelemedApp.Infrastracture\TelemedApp.Infrastracture.csproj", "{7737F914-E9BE-210B-1D3E-17EAD96BF52C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.Infrastructure", "TelemedApp.Infrastructure\TelemedApp.Infrastructure.csproj", "{7737F914-E9BE-210B-1D3E-17EAD96BF52C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.UI.Client", "TelemedApp.UI\Client\TelemedApp.UI.Client.csproj", "{09C02084-0E79-BA86-F0B0-18C197792551}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		global.json = global.json
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.UI.Server", "TelemedApp.UI\Server\TelemedApp.UI.Server.csproj", "{D2E148C1-5776-772D-BF2C-0C40C5199A0D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.Shared", "TelemedApp.Shared\TelemedApp.Shared.csproj", "{5755DEFB-B178-F08C-6F19-611D231E870B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.UI.Shared", "TelemedApp.UI\Shared\TelemedApp.UI.Shared.csproj", "{5EFA906D-8496-17FB-B972-8068E591DFE8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemedApp.UI.Client", "TelemedApp.UI\TelemedApp.UI.Client\TelemedApp.UI.Client.csproj", "{3E674981-B6DF-0C90-C730-B7B546377CB8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,18 +49,14 @@ Global
 		{7737F914-E9BE-210B-1D3E-17EAD96BF52C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7737F914-E9BE-210B-1D3E-17EAD96BF52C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7737F914-E9BE-210B-1D3E-17EAD96BF52C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{09C02084-0E79-BA86-F0B0-18C197792551}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{09C02084-0E79-BA86-F0B0-18C197792551}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{09C02084-0E79-BA86-F0B0-18C197792551}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{09C02084-0E79-BA86-F0B0-18C197792551}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D2E148C1-5776-772D-BF2C-0C40C5199A0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2E148C1-5776-772D-BF2C-0C40C5199A0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D2E148C1-5776-772D-BF2C-0C40C5199A0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D2E148C1-5776-772D-BF2C-0C40C5199A0D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5EFA906D-8496-17FB-B972-8068E591DFE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5EFA906D-8496-17FB-B972-8068E591DFE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5EFA906D-8496-17FB-B972-8068E591DFE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5EFA906D-8496-17FB-B972-8068E591DFE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5755DEFB-B178-F08C-6F19-611D231E870B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5755DEFB-B178-F08C-6F19-611D231E870B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5755DEFB-B178-F08C-6F19-611D231E870B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5755DEFB-B178-F08C-6F19-611D231E870B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E674981-B6DF-0C90-C730-B7B546377CB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E674981-B6DF-0C90-C730-B7B546377CB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E674981-B6DF-0C90-C730-B7B546377CB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E674981-B6DF-0C90-C730-B7B546377CB8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

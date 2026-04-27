@@ -1,0 +1,380 @@
+﻿@page "/patients"
+@using TelemedApp.UI.Client.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using TelemedApp.Application.DTOs
+@using TelemedApp.Domain.Enums
+@inject PatientsService PatientsService
+@inject PermissionGuard Permission
+
+<div class="mb-6 flex items-center justify-between">
+
+    @if (!Permission.Has("Patients.View"))
+    {
+        <h2 class="text-2xl font-semibold text-red-600 dark:text-red-400">
+            You do not have permission to view patients.
+        </h2>
+        return;
+    }
+
+    <h2 class="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">Patients</h2>
+
+    <div class="flex gap-3">
+
+        <input class="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-neutral-900 placeholder-neutral-400
+                      focus:outline-none focus:ring-2 focus:ring-blue-500
+                      dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder-neutral-500"
+               placeholder="Search patients..."
+               @bind="searchTerm" />
+
+        @if (Permission.Has("Patients.Create"))
+        {
+            <button class="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+                    @onclick="OpenCreateModal">
+                + Add Patient
+            </button>
+        }
+
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <div class="text-neutral-600 dark:text-neutral-400">Loading patients...</div>
+}
+else
+{
+    <div class="flex flex-col gap-4">
+
+        @foreach (var p in filteredPatients)
+        {
+            <div class="animate-fade-in-up flex flex-col gap-2 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm
+                                dark:border-neutral-800 dark:bg-neutral-900">
+
+                <!-- Line 1 -->
+                <div class="flex flex-wrap gap-3 text-neutral-900 dark:text-neutral-100">
+                    <span class="font-medium">@p.FullName</span>
+
+                    @if (!string.IsNullOrWhiteSpace(p.MaidenName))
+                    {
+                        <span class="text-neutral-500 dark:text-neutral-400">(@p.MaidenName)</span>
+                    }
+
+                <span class="text-neutral-500 dark:text-neutral-400">@p.Gender</span>
+                <span class="text-neutral-500 dark:text-neutral-400">@FormatDate(p.BirthDate)</span>
+            </div>
+
+            <!-- Line 2 -->
+            <div class="flex flex-wrap gap-3 text-neutral-700 dark:text-neutral-300">
+                <span>@p.Phone</span>
+                <span>@p.Email</span>
+            </div>
+
+            <!-- Line 3 -->
+            <div class="text-neutral-700 dark:text-neutral-300">
+                @p.Address
+            </div>
+
+            <!-- Line 4 -->
+            <div class="flex flex-wrap gap-3 text-neutral-700 dark:text-neutral-300">
+                <span>@p.InsuranceProvider</span>
+                <span>@p.InsuranceNo</span>
+            </div>
+
+            <!-- Line 5 -->
+            <div class="flex flex-wrap gap-3 text-neutral-700 dark:text-neutral-300">
+                <span>@p.MedicalRecordNumber</span>
+                <span>@p.NextOfKin</span>
+            </div>
+
+            <!-- Line 6 -->
+            <div class="text-neutral-600 dark:text-neutral-400">
+                @Truncate(p.Notes, 100)
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-2 flex items-center justify-between">
+
+                <span class="rounded-md px-3 py-1 text-sm font-medium
+                                    @(p.Status == PatientStatus.Active ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" :
+                                                        p.Status == PatientStatus.Inactive ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300" :
+                                                        "bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300")">
+                @p.Status
+            </span>
+
+                    <div class="flex gap-2">
+
+                @if (Permission.Has("Patients.Edit"))
+                        {
+                            <button class="rounded-md bg-neutral-200 px-3 py-1 text-neutral-800 transition hover:bg-neutral-300
+                                                       dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                                    @onclick="() => OpenEditModal(p)">
+                                Edit
+                            </button>
+                        }
+
+                        @if (Permission.Has("Patients.Delete"))
+                        {
+                            <button class="rounded-md bg-red-200 px-3 py-1 text-red-800 transition hover:bg-red-300
+                                                       dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800"
+                                    @onclick="() => Delete(p.Id)">
+                                Delete
+                            </button>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (showModal)
+{
+    @if ((editing && Permission.Has("Patients.Edit")) ||
+             (!editing && Permission.Has("Patients.Create")))
+    {
+        <!-- Overlay -->
+        <div class="fixed inset-0 z-40 bg-black/40" @onclick="CloseModal"></div>
+
+        <!-- Modal -->
+        <div class="animate-slide-up fixed inset-0 z-50 flex flex-col border-l border-neutral-200 bg-white
+                            dark:border-neutral-800 dark:bg-neutral-900">
+
+            <!-- Sticky Header -->
+            <div class="sticky top-0 z-50 flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4
+                                dark:border-neutral-800 dark:bg-neutral-900">
+                <h3 class="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                    @(editing ? "Edit Patient" : "Add Patient")
+                </h3>
+
+                <button class="text-2xl text-neutral-500 hover:text-neutral-700
+                                       dark:text-neutral-400 dark:hover:text-neutral-200"
+                        @onclick="CloseModal">
+                    ×
+                </button>
+            </div>
+
+            <!-- Scrollable Body -->
+            <div class="flex-1 overflow-y-auto px-6 py-4">
+                <EditForm Model="current" OnValidSubmit="Save">
+                    <DataAnnotationsValidator />
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                        <div>
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Full Name</label>
+                            <InputText class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                     dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                       @bind-Value="current.FullName" />
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Maiden Name</label>
+                            <InputText class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                     dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                       @bind-Value="current.MaidenName" />
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Birth Date</label>
+                            <InputDate class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                     dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                       @bind-Value="current.BirthDate" />
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Gender</label>
+                            <InputText class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                     dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                       @bind-Value="current.Gender" />
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Phone</label>
+                            <InputText class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                     dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                       @bind-Value="current.Phone" />
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Email</label>
+                            <InputText class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                     dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                       @bind-Value="current.Email" />
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Address</label>
+                            <InputText class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                     dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                       @bind-Value="current.Address" />
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Insurance Provider</label>
+                            <InputText class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                     dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                       @bind-Value="current.InsuranceProvider" />
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Insurance No</label>
+                            <InputText class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                     dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                       @bind-Value="current.InsuranceNo" />
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Medical Record Number</label>
+                            <InputText class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                     dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                       @bind-Value="current.MedicalRecordNumber" />
+                        </div>
+
+                        <div>
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Next of Kin</label>
+                            <InputText class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                     dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                       @bind-Value="current.NextOfKin" />
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="mb-1 block text-neutral-700 dark:text-neutral-300">Notes</label>
+                            <InputTextArea class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900
+                                                        dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+                                           @bind-Value="current.Notes" />
+                        </div>
+
+                    </div>
+
+                    <button type="submit"
+                            class="mt-6 w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700">
+                        Save
+                    </button>
+
+                </EditForm>
+            </div>
+
+        </div>
+    }
+}
+
+@code {
+    string searchTerm = "";
+    bool isLoading = true;
+    bool showModal = false;
+    bool editing = false;
+
+    List<PatientDto> patients = new();
+    List<PatientDto> filteredPatients => patients
+        .Where(p => string.IsNullOrWhiteSpace(searchTerm) ||
+                    p.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    PatientDto current = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+
+        if (Permission.Has("Patients.View"))
+        {
+            var result = await PatientsService.GetAll();
+            patients = result?.ToList() ?? new();
+        }
+
+        isLoading = false;
+    }
+
+    void OpenCreateModal()
+    {
+        if (!Permission.Has("Patients.Create"))
+            return;
+
+        editing = false;
+        current = new PatientDto();
+        showModal = true;
+    }
+
+    void OpenEditModal(PatientDto p)
+    {
+        if (!Permission.Has("Patients.Edit"))
+            return;
+
+        editing = true;
+        current = new PatientDto
+        {
+            Id = p.Id,
+            FullName = p.FullName,
+            MaidenName = p.MaidenName,
+            BirthDate = p.BirthDate,
+            Gender = p.Gender,
+            Phone = p.Phone,
+            Email = p.Email,
+            Address = p.Address,
+            InsuranceProvider = p.InsuranceProvider,
+            InsuranceNo = p.InsuranceNo,
+            MedicalRecordNumber = p.MedicalRecordNumber,
+            NextOfKin = p.NextOfKin,
+            Notes = p.Notes,
+            Status = p.Status
+        };
+
+        showModal = true;
+    }
+
+    async Task Save()
+    {
+        if (editing)
+        {
+            if (!Permission.Has("Patients.Edit"))
+                return;
+
+            await PatientsService.Update(current);
+
+            var existing = patients.First(x => x.Id == current.Id);
+            existing.FullName = current.FullName;
+            existing.MaidenName = current.MaidenName;
+            existing.BirthDate = current.BirthDate;
+            existing.Gender = current.Gender;
+            existing.Phone = current.Phone;
+            existing.Email = current.Email;
+            existing.Address = current.Address;
+            existing.InsuranceProvider = current.InsuranceProvider;
+            existing.InsuranceNo = current.InsuranceNo;
+            existing.MedicalRecordNumber = current.MedicalRecordNumber;
+            existing.NextOfKin = current.NextOfKin;
+            existing.Notes = current.Notes;
+            existing.Status = current.Status;
+        }
+        else
+        {
+            if (!Permission.Has("Patients.Create"))
+                return;
+
+            var created = await PatientsService.Create(current);
+            if (created != null)
+                patients.Add(created);
+        }
+
+        CloseModal();
+    }
+
+    async Task Delete(Guid id)
+    {
+        if (!Permission.Has("Patients.Delete"))
+            return;
+
+        await PatientsService.Delete(id);
+        patients.RemoveAll(p => p.Id == id);
+    }
+
+    void CloseModal() => showModal = false;
+
+    string FormatDate(DateTime? dt) =>
+        dt?.ToString("dd MMM yyyy") ?? "";
+
+    string Truncate(string? text, int length) =>
+        string.IsNullOrWhiteSpace(text) ? "" :
+        text.Length <= length ? text : text.Substring(0, length) + "...";
+}

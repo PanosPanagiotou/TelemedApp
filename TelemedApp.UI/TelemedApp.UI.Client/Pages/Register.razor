@@ -1,0 +1,26 @@
+﻿@page "/register"
+@using TelemedApp.UI.Client.Services
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<h3>Create an Account</h3>
+
+<input @bind="Email" placeholder="Email" />
+<input @bind="FullName" placeholder="Full name" />
+<input @bind="Password" type="password" placeholder="Password" />
+
+<button @onclick="DoRegister">Register</button>
+
+@code {
+    string Email = "";
+    string FullName = "";
+    string Password = "";
+
+    async Task DoRegister()
+    {
+        var result = await Auth.Register(FullName, Email, Password);
+
+        if (result.Success)
+            Nav.NavigateTo("/login");
+    }
+}

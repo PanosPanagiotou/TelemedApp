@@ -1,0 +1,9 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Tables
+
+<td class="whitespace-nowrap px-4 py-3">
+    @ChildContent
+</td>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

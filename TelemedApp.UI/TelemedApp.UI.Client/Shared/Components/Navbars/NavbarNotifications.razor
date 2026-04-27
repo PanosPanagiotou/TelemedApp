@@ -1,0 +1,54 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Components.Navbars
+
+<div class="relative" @onclick:stopPropagation="true">
+
+    <NavbarItem OnClick="Toggle">
+        <i class="fa fa-bell"></i>
+
+        @if (Count > 0)
+        {
+            <span class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                @Count
+            </span>
+        }
+    </NavbarItem>
+
+    @if (Open)
+    {
+        <div class="@DropdownClasses">
+            @if (Notifications?.Any() == true)
+            {
+                @foreach (var n in Notifications)
+                {
+                    <div class="px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800">
+                        @n
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                    No notifications
+                </div>
+            }
+        </div>
+    }
+
+</div>
+
+@code {
+    [CascadingParameter] public bool IsDark { get; set; }
+
+    [Parameter] public int Count { get; set; }
+    [Parameter] public List<string>? Notifications { get; set; }
+
+    private bool Open { get; set; }
+
+    private string DropdownClasses =>
+        "absolute right-0 mt-2 w-64 rounded-lg border shadow-lg animate-scale-fade z-50 " +
+        (IsDark
+            ? "bg-gray-900 border-gray-700"
+            : "bg-white border-gray-200");
+
+    private void Toggle() => Open = !Open;
+}

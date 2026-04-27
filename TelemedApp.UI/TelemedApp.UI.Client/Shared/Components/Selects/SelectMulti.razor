@@ -1,0 +1,65 @@
+﻿@inherits SelectBase
+@using TelemedApp.UI.Client.Models
+
+<div class="flex flex-col gap-1">
+
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="text-sm font-medium @(IsDark ? "text-gray-200" : "text-gray-700")">
+            @Label
+        </label>
+    }
+
+    <button class="@TriggerClasses" @onclick="Toggle">
+        <div class="flex flex-wrap gap-1">
+            @foreach (var v in SelectedOptions)
+            {
+                <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                    @v.Label
+                </span>
+            }
+        </div>
+        <i class="fa fa-chevron-down ml-auto text-xs opacity-60"></i>
+    </button>
+
+    @if (Open)
+    {
+        <div class="@DropdownClasses">
+            @foreach (var option in Options)
+            {
+                <div role="button"
+                     tabindex="0"
+                     class="@OptionClasses(null, option.Value)"
+                     @onclick="() => ToggleOption(option)">
+                    <div class="pointer-events-none flex items-center gap-2">
+                        <input type="checkbox" checked="@IsSelected(option)" />
+                        <span>@option.Label</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public List<SelectOption> Options { get; set; } = [];
+    [Parameter] public List<string> Values { get; set; } = [];
+    [Parameter] public EventCallback<List<string>> ValuesChanged { get; set; }
+
+    private IEnumerable<SelectOption> SelectedOptions =>
+        Options.Where(o => Values.Contains(o.Value));
+
+    private bool IsSelected(SelectOption option) =>
+        Values.Contains(option.Value);
+
+    private async Task ToggleOption(SelectOption option)
+    {
+        if (Values.Contains(option.Value))
+            Values.Remove(option.Value);
+        else
+            Values.Add(option.Value);
+
+        await ValuesChanged.InvokeAsync(Values);
+    }
+}

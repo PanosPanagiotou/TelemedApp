@@ -1,0 +1,61 @@
+﻿@page "/admin/permissions"
+@using TelemedApp.Shared.Authorization
+@using TelemedApp.UI.Client.Services
+@inject PermissionGuard Permission
+
+<DashboardPage Header="@Header">
+
+    @if (!Permission.Has("Admin.Roles.Manage"))
+    {
+        <NotAuthorizedPage />
+        return;
+    }
+
+    <div class="space-y-8">
+
+        @foreach (var group in PermissionGroups)
+        {
+            <Card Variant="default">
+                <CardHeader>
+                    <CardTitle Size="lg">@group.Key</CardTitle>
+                </CardHeader>
+
+                <CardBody Variant="loose">
+                    <ul class="space-y-2">
+                        @foreach (var perm in group.Value)
+                        {
+                            <li class="text-gray-700 dark:text-gray-300">@perm</li>
+                        }
+                    </ul>
+                </CardBody>
+            </Card>
+        }
+
+    </div>
+
+</DashboardPage>
+
+@code {
+    RenderFragment Header => @<DashboardHeader Title="Permissions"
+                                               Subtitle="All system permissions grouped by domain"
+                                               Icon="fa-solid fa-lock" />;
+
+    Dictionary<string, List<string>> PermissionGroups = new();
+
+    protected override void OnInitialized()
+    {
+        PermissionGroups = new()
+        {
+            { "Admin", AdminPermissions.All().ToList() },
+            { "Doctors", Doctors.All().ToList() },
+            { "Patients", Patients.All().ToList() },
+            { "Nurses", Nurses.All().ToList() },
+            { "Lab", Lab.All().ToList() },
+            { "Billing", Billing.All().ToList() },
+            { "Support", Support.All().ToList() },
+            { "Telemedicine", Telemedicine.All().ToList() },
+            { "Pharmacists", Pharmacists.All().ToList() },
+            { "Maintenance", Maintenance.All().ToList() }
+        };
+    }
+}

@@ -1,0 +1,66 @@
+﻿@inherits InputBase
+
+<div class="flex flex-col gap-1">
+
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="text-sm font-medium @(IsDark ? "text-gray-200" : "text-gray-700")">
+            @Label
+        </label>
+    }
+
+    <div class="relative">
+
+        @if (LeadingIcon is not null)
+        {
+            <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                @LeadingIcon
+            </span>
+        }
+
+        <input @bind="Value"
+               @bind:event="oninput"
+               type="@Type"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               class="@BuildIconClasses()" />
+
+        @if (TrailingIcon is not null)
+        {
+            <span class="absolute inset-y-0 right-3 flex items-center text-gray-400">
+                @TrailingIcon
+            </span>
+        }
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(HelperText))
+    {
+        <span class="text-xs @(IsDark ? "text-gray-400" : "text-gray-600")">
+            @HelperText
+        </span>
+    }
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Placeholder { get; set; } = "";
+    [Parameter] public string Type { get; set; } = "text";
+    [Parameter] public string HelperText { get; set; } = "";
+
+    [Parameter] public RenderFragment? LeadingIcon { get; set; }
+    [Parameter] public RenderFragment? TrailingIcon { get; set; }
+
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private Task OnInput(ChangeEventArgs e)
+        => ValueChanged.InvokeAsync(e.Value?.ToString());
+
+    private string BuildIconClasses()
+    {
+        var paddingLeft = LeadingIcon is not null ? "pl-10" : "";
+        var paddingRight = TrailingIcon is not null ? "pr-10" : "";
+
+        return $"{BuildClasses()} {paddingLeft} {paddingRight}";
+    }
+}

@@ -1,0 +1,28 @@
+﻿<div class="@WrapperClasses">
+    <div class="@AccentClasses"></div>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // NEW
+    [Parameter] public string AccentColor { get; set; } = "blue";
+    [Parameter] public bool Compact { get; set; } = false;
+
+    private string WrapperClasses =>
+        "relative rounded-xl p-6 shadow-sm bg-white dark:bg-gray-900 transition-colors";
+
+    private string AccentClasses =>
+        $"absolute left-0 top-0 h-1 w-full rounded-t-xl {AccentColorClass}";
+
+    private string AccentColorClass =>
+        AccentColor.ToLower() switch
+        {
+            "green" => "bg-green-500 dark:bg-green-400",
+            "red" => "bg-red-500 dark:bg-red-400",
+            "yellow" => "bg-yellow-500 dark:bg-yellow-400",
+            "purple" => "bg-purple-500 dark:bg-purple-400",
+            _ => "bg-blue-500 dark:bg-blue-400"
+        };
+}

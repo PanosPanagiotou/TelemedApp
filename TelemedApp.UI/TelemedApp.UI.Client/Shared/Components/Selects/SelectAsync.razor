@@ -1,0 +1,77 @@
+﻿@inherits SelectBase
+@using TelemedApp.UI.Client.Models
+
+<div class="flex flex-col gap-1">
+
+    <label class="text-sm font-medium @(IsDark ? "text-gray-200" : "text-gray-700")">@Label</label>
+
+    <button class="@TriggerClasses" @onclick="Toggle">
+        <span>@SelectedLabel</span>
+        <i class="fa fa-chevron-down ml-auto text-xs opacity-60"></i>
+    </button>
+
+    @if (Open)
+    {
+        <div class="@DropdownClasses">
+
+            <input value="@Search"
+                   @oninput="OnSearchInput"
+                   placeholder="Search…"
+                   class="@SearchClasses" />
+
+            @if (Loading)
+            {
+                <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Loading…</div>
+            }
+            else
+            {
+                <div class="max-h-60 overflow-y-auto">
+                    @foreach (var option in Options)
+                    {
+                        <button class="@OptionClasses(Value, option.Value)"
+                                @onclick="() => SelectOption(option)">
+                            @option.Label
+                        </button>
+                    }
+                </div>
+            }
+
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public Func<string, Task<List<SelectOption>>>? Fetch { get; set; }
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private List<SelectOption> Options { get; set; } = [];
+    private bool Loading { get; set; }
+
+    private string SelectedLabel =>
+        Options.FirstOrDefault(o => o.Value == Value)?.Label ?? "Select…";
+
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        Search = e.Value?.ToString() ?? "";
+        await LoadOptions();
+    }
+
+    private async Task LoadOptions()
+    {
+        if (Fetch is null)
+            return;
+
+        Loading = true;
+        Options = await Fetch(Search);
+        Loading = false;
+    }
+
+    private async Task SelectOption(SelectOption option)
+    {
+        Value = option.Value;
+        await ValueChanged.InvokeAsync(Value);
+        Close();
+    }
+}

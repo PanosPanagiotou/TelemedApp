@@ -1,0 +1,11 @@
+﻿@inject TelemedApp.UI.Client.Services.PermissionGuard Guard
+
+@if (Guard.Has(Permission))
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter] public string Permission { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

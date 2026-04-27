@@ -1,0 +1,53 @@
+﻿<div class="@WrapperClasses" @ref="cardRef" @onclick="HandleClick">
+
+    @if (string.IsNullOrEmpty(EffectiveValue))
+    {
+        <!-- Skeleton -->
+        <div class="flex animate-pulse flex-col gap-3">
+            <div class="h-4 w-24 rounded bg-gray-300 dark:bg-gray-700"></div>
+            <div class="h-8 w-32 rounded bg-gray-300 dark:bg-gray-700"></div>
+            <div class="h-3 w-20 rounded bg-gray-300 dark:bg-gray-700"></div>
+        </div>
+    }
+    else
+    {
+        <div class="flex items-center gap-4">
+
+            @if (!string.IsNullOrEmpty(EffectiveIcon))
+            {
+                <div class="text-3xl text-blue-500 dark:text-blue-400">
+                    <i class="@EffectiveIcon"></i>
+                </div>
+            }
+
+            <div class="flex flex-col">
+
+                <!-- Title -->
+                <div class="@TitleClasses">
+                    @EffectiveTitle
+                </div>
+
+                <!-- Value -->
+                <div class="@ValueClasses" @ref="valueRef"></div>
+
+                <!-- Subtitle -->
+                @if (!string.IsNullOrEmpty(EffectiveSubtitle))
+                {
+                    <div class="@SubtitleClasses">
+                        @EffectiveSubtitle
+                    </div>
+                }
+
+                <!-- Trend -->
+                @if (TrendIcon is not null)
+                {
+                    <div class="@TrendClasses">
+                        @TrendIcon @TrendLabel
+                    </div>
+                }
+
+            </div>
+        </div>
+    }
+
+</div>

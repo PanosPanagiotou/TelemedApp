@@ -1,0 +1,22 @@
+﻿@namespace TelemedApp.UI.Client.Shared.Layout
+
+<div class="w-full animate-pulse">
+
+    <!-- Metrics Skeleton -->
+    <div class="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        @for (int i = 0; i < 4; i++)
+        {
+            <div class="h-28 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+        }
+    </div>
+
+    <!-- Two-column Skeleton -->
+    <div class="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div class="h-64 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+        <div class="h-64 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+    </div>
+
+    <!-- Calendar Skeleton -->
+    <div class="h-[480px] rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+
+</div>

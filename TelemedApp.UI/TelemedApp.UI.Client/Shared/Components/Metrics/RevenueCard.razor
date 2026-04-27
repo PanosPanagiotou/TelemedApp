@@ -1,0 +1,50 @@
+﻿@using System.Globalization
+@using TelemedApp.UI.Client.Shared.Components.Metrics
+
+<MetricCard Title="Revenue"
+            Value="@FormattedAmount"
+            Subtitle="@EffectiveSubtitle"
+            Trend="@Trend"
+            Icon="fa-solid fa-coins"
+            Compact="@Compact"
+            Clickable="@Clickable"
+            OnClick="@OnClick" />
+
+@code {
+    [Parameter] public decimal Amount { get; set; }
+    [Parameter] public string Currency { get; set; } = "EUR";
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string? TrendOverride { get; set; }
+
+    // NEW
+    [Parameter] public bool Compact { get; set; } = false;
+    [Parameter] public bool Clickable { get; set; } = false;
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private CultureInfo Culture =>
+        Currency.ToUpper() switch
+        {
+            "EUR" => new CultureInfo("el-GR"),
+            "USD" => new CultureInfo("en-US"),
+            "GBP" => new CultureInfo("en-GB"),
+            _ => CultureInfo.InvariantCulture
+        };
+
+    public string FormattedAmount =>
+        Amount.ToString("C", Culture);
+
+    public string EffectiveSubtitle =>
+        !string.IsNullOrWhiteSpace(Subtitle)
+            ? Subtitle
+            : "Revenue this period";
+
+    public string Trend =>
+        !string.IsNullOrWhiteSpace(TrendOverride)
+            ? TrendOverride
+            : Amount switch
+            {
+                > 0 => "up",
+                < 0 => "down",
+                _ => ""
+            };
+}

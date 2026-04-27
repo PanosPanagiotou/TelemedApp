@@ -1,0 +1,25 @@
+﻿@inherits InputBase
+@inject IJSRuntime JS
+
+<input @ref="InputRef"
+       @bind="Value"
+       @bind:event="oninput"
+       placeholder="@Placeholder"
+       disabled="@Disabled"
+       class="@BuildClasses()" />
+
+@code {
+    [Parameter] public string Mask { get; set; } = "";
+    [Parameter] public string Placeholder { get; set; } = "";
+
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private ElementReference InputRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await JS.InvokeVoidAsync("applyMask", InputRef, Mask);
+    }
+}

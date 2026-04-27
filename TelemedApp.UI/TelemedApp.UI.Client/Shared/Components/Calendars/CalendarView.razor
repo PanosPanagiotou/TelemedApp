@@ -1,0 +1,375 @@
+﻿@using TelemedApp.Domain.Enums
+@using TelemedApp.UI.Client.Models
+@using TelemedApp.UI.Client.Services
+@inject PermissionGuard Permission
+
+<div class="space-y-6">
+
+    <!-- HEADER -->
+    <div class="flex items-center justify-between">
+
+        <!-- Navigation -->
+        <div class="flex items-center gap-2">
+            <Button Variant="secondary" Size="sm" IconPosition="left" OnClick="Prev">
+                Prev
+            </Button>
+
+            <Button Variant="secondary" Size="sm" OnClick="Next">
+                Next
+            </Button>
+
+            <Button Variant="primary" Size="sm" OnClick="Today">
+                Today
+            </Button>
+        </div>
+
+        <!-- View Switch -->
+        <div class="flex items-center gap-2">
+            @if (Permission.Has("Appointments.View"))
+            {
+                <Button Variant="ghost"
+                        Tone="subtle"
+                        Size="sm"
+                        HoverEffect="true"
+                        ActiveScale="true"
+                        CssClass="@(View == CalendarViewMode.Week ? "bg-blue-600 text-white" : "")"
+                        OnClick="() => SetView(CalendarViewMode.Week)">
+                    Week
+                </Button>
+
+                <Button Variant="ghost"
+                        Tone="subtle"
+                        Size="sm"
+                        HoverEffect="true"
+                        ActiveScale="true"
+                        CssClass="@(View == CalendarViewMode.Month ? "bg-blue-600 text-white" : "")"
+                        OnClick="() => SetView(CalendarViewMode.Month)">
+                    Month
+                </Button>
+            }
+        </div>
+    </div>
+
+    <!-- TITLE -->
+    <div class="flex items-center justify-between">
+        <h3 class="text-xl font-semibold">@Title</h3>
+        <div class="text-sm text-gray-400">@Subtitle</div>
+    </div>
+
+    <!-- WEEK VIEW -->
+    @if (View == CalendarViewMode.Week)
+    {
+        <div class="grid grid-cols-7 gap-4">
+            @foreach (var day in WeekDays)
+            {
+                <div class="rounded-xl border border-gray-700/20 bg-gray-900/10 p-4
+                                    transition hover:bg-gray-800/50 dark:border-gray-600/20 dark:bg-gray-800/40">
+
+                    <!-- Day Header -->
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm font-semibold">@day.Date.ToString("ddd dd")</div>
+                        <div class="text-xs text-gray-400">@day.Date.ToString("MMM")</div>
+                    </div>
+
+                    <!-- Appointments -->
+                    <div class="mt-3 space-y-2">
+
+                        @if (Permission.Has("Appointments.View"))
+                        {
+                            @foreach (var ap in day.Appointments)
+                            {
+                                <Button Variant="ghost"
+                                        Tone="subtle"
+                                        Size="sm"
+                                        FullWidth="true"
+                                        CssClass="justify-start"
+                                        OnClick="() => OpenDetails(ap)">
+
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-semibold">@ap.PatientName</span>
+                                        <span class="text-xs text-gray-400">
+                                            @ap.Date.ToString("HH:mm") • @ap.DoctorName
+                                        </span>
+
+                                        @if (IsPast(day.Date))
+                                        {
+                                            <Badge Variant="@GetStatusVariant(ap.Status)"
+                                                   Tone="subtle"
+                                                   Size="sm"
+                                                   CssClass="mt-1">
+                                                @ap.Status.ToDisplay()
+                                            </Badge>
+                                        }
+                                    </div>
+                                </Button>
+                            }
+                        }
+
+                        @if (!day.Appointments.Any())
+                        {
+                            <div class="text-xs text-gray-500">No appointments</div>
+                        }
+                    </div>
+
+                    <!-- Book Button -->
+                    <div class="mt-4">
+                        @if (Permission.Has("Appointments.Create") &&
+                                        (IsFuture(day.Date) ||
+                                        (IsToday(day.Date) && day.Appointments.Any(a => a.Date > DateTime.Now))))
+                        {
+                            <Button Variant="success" Size="sm" FullWidth="true"
+                                    OnClick="() => OpenBooking(day.Date)">
+                                Book
+                            </Button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- MONTH VIEW -->
+        <div class="grid grid-cols-7 gap-4">
+            @foreach (var cell in MonthCells)
+            {
+                <div class="rounded-xl border border-gray-700/20 bg-gray-900/10 p-4
+                                    transition hover:bg-gray-800/50 dark:border-gray-600/20 dark:bg-gray-800/40
+                                    @(cell.IsCurrentMonth ? "" : "opacity-50")">
+
+                    <!-- Day Header -->
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm font-semibold">@cell.Date.Day</div>
+                        <div class="text-xs text-gray-400">@cell.Appointments.Count()</div>
+                    </div>
+
+                    <!-- Appointments -->
+                    <div class="mt-3 space-y-1">
+
+                        @if (Permission.Has("Appointments.View"))
+                        {
+                            @foreach (var ap in cell.Appointments.Take(3))
+                            {
+                                <Button Variant="ghost"
+                                        Tone="subtle"
+                                        Size="sm"
+                                        FullWidth="true"
+                                        CssClass="justify-start text-xs"
+                                        OnClick="() => OpenDetails(ap)">
+
+                                    <div>
+                                        @ap.Date.ToString("HH:mm") — @ap.PatientName
+                                    </div>
+
+                                    @if (IsPast(cell.Date))
+                                    {
+                                        <Badge Variant="@GetStatusVariant(ap.Status)"
+                                               Tone="subtle"
+                                               Size="sm"
+                                               CssClass="mt-1">
+                                            @ap.Status.ToDisplay()
+                                        </Badge>
+                                    }
+                                </Button>
+                            }
+                        }
+
+                        @if (cell.Appointments.Count() > 3)
+                        {
+                            <div class="text-xs text-gray-400">
+                                +@((cell.Appointments.Count()) - 3) more
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Book -->
+                    <div class="mt-4">
+                        @if (Permission.Has("Appointments.Create") && IsFuture(cell.Date))
+                        {
+                            <Button Variant="success" Size="sm" FullWidth="true"
+                                    OnClick="() => OpenBooking(cell.Date)">
+                                Book
+                            </Button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- DETAILS MODAL -->
+    @if (Permission.Has("Appointments.View") && SelectedAppointment is not null)
+    {
+        <div class="animate-fade-in fixed inset-0 z-50 flex items-center justify-center">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @onclick="CloseDetails"></div>
+
+            <div class="z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-900">
+                <h4 class="text-lg font-semibold">@SelectedAppointment.PatientName</h4>
+                <div class="text-sm text-gray-500">@SelectedAppointment.Date.ToString("f")</div>
+                <div class="mt-2">Doctor: <strong>@SelectedAppointment.DoctorName</strong></div>
+                <div class="mt-2 text-sm">@SelectedAppointment.Notes</div>
+
+                <div class="mt-6 flex justify-end gap-2">
+                    <Button Variant="secondary" OnClick="CloseDetails">Close</Button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- BOOKING MODAL -->
+    @if (Permission.Has("Appointments.Create") && BookingDate is not null)
+    {
+        <div class="animate-fade-in fixed inset-0 z-50 flex items-center justify-center">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @onclick="CloseBooking"></div>
+
+            <div class="z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-900">
+                <h4 class="text-lg font-semibold">
+                    Book appointment — @BookingDate.Value.ToString("D")
+                </h4>
+
+                <div class="mt-4 space-y-3">
+                    <input class="w-full rounded border p-2" placeholder="Patient name" @bind="NewPatient" />
+                    <input class="w-full rounded border p-2" placeholder="Doctor" @bind="NewDoctor" />
+                    <input type="time" class="w-full rounded border p-2" @bind="NewTime" />
+                    <textarea class="w-full rounded border p-2" placeholder="Notes" @bind="NewNotes"></textarea>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-2">
+                    <Button Variant="secondary" OnClick="CloseBooking">Cancel</Button>
+                    <Button Variant="primary" OnClick="ConfirmBooking">Confirm</Button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<AppointmentViewModel>? Appointments { get; set; }
+    [Parameter] public EventCallback<AppointmentViewModel> OnAppointmentCreated { get; set; }
+
+    enum CalendarViewMode { Week, Month }
+    CalendarViewMode View = CalendarViewMode.Week;
+
+    DateTime Anchor = DateTime.Today;
+    string Title => View == CalendarViewMode.Week ? $"Week of {StartOfWeek(Anchor):d}" : Anchor.ToString("Y");
+    string Subtitle => View == CalendarViewMode.Week ? $"{StartOfWeek(Anchor):d} — {StartOfWeek(Anchor).AddDays(6):d}" : "";
+
+    List<DaySlot> WeekDays = new();
+    List<MonthCell> MonthCells = new();
+
+    AppointmentViewModel? SelectedAppointment;
+    DateTime? BookingDate;
+    string NewPatient = "";
+    string NewDoctor = "";
+    TimeOnly? NewTime = TimeOnly.FromTimeSpan(TimeSpan.FromHours(9));
+    string NewNotes = "";
+
+    bool IsPast(DateTime date) => date.Date < DateTime.Today;
+    bool IsFuture(DateTime date) => date.Date > DateTime.Today;
+    bool IsToday(DateTime date) => date.Date == DateTime.Today;
+
+    protected override void OnParametersSet() => BuildCalendar();
+
+    void SetView(CalendarViewMode v)
+    {
+        View = v;
+        BuildCalendar();
+    }
+
+    void Prev()
+    {
+        Anchor = View == CalendarViewMode.Week ? Anchor.AddDays(-7) : Anchor.AddMonths(-1);
+        BuildCalendar();
+    }
+
+    void Next()
+    {
+        Anchor = View == CalendarViewMode.Week ? Anchor.AddDays(7) : Anchor.AddMonths(1);
+        BuildCalendar();
+    }
+
+    void Today()
+    {
+        Anchor = DateTime.Today;
+        BuildCalendar();
+    }
+
+    void BuildCalendar()
+    {
+        var list = (Appointments ?? Enumerable.Empty<AppointmentViewModel>()).ToList();
+
+        var start = StartOfWeek(Anchor);
+        WeekDays = Enumerable.Range(0, 7).Select(i =>
+        {
+            var d = start.AddDays(i);
+            var aps = list.Where(a => a.Date.Date == d.Date).OrderBy(a => a.Date).ToList();
+            return new DaySlot { Date = d, Appointments = aps };
+        }).ToList();
+
+        var firstOfMonth = new DateTime(Anchor.Year, Anchor.Month, 1);
+        var startCell = firstOfMonth.AddDays(-(int)firstOfMonth.DayOfWeek);
+        MonthCells = Enumerable.Range(0, 42).Select(i =>
+        {
+            var d = startCell.AddDays(i);
+            var aps = list.Where(a => a.Date.Date == d.Date).OrderBy(a => a.Date).ToList();
+            return new MonthCell { Date = d, Appointments = aps, IsCurrentMonth = d.Month == Anchor.Month };
+        }).ToList();
+    }
+
+    void OpenDetails(AppointmentViewModel ap) => SelectedAppointment = ap;
+    void CloseDetails() => SelectedAppointment = null;
+
+    void OpenBooking(DateTime date)
+    {
+        BookingDate = date.Date;
+        NewPatient = "";
+        NewDoctor = "";
+        NewTime = TimeOnly.FromTimeSpan(TimeSpan.FromHours(9));
+        NewNotes = "";
+    }
+
+    void CloseBooking() => BookingDate = null;
+
+    async Task ConfirmBooking()
+    {
+        if (BookingDate is null) return;
+
+        var ts = NewTime?.ToTimeSpan() ?? TimeSpan.FromHours(9);
+        var dt = BookingDate.Value.Date + ts;
+
+        var ap = new AppointmentViewModel()
+        {
+            PatientName = string.IsNullOrWhiteSpace(NewPatient) ? "Unknown" : NewPatient,
+            DoctorName = string.IsNullOrWhiteSpace(NewDoctor) ? "TBD" : NewDoctor,
+            Date = dt,
+            Notes = NewNotes ?? ""
+        };
+
+        if (OnAppointmentCreated.HasDelegate)
+            await OnAppointmentCreated.InvokeAsync(ap);
+
+        if (Appointments is IList<AppointmentViewModel> list)
+            list.Add(ap);
+
+        CloseBooking();
+        BuildCalendar();
+    }
+
+    static DateTime StartOfWeek(DateTime dt)
+    {
+        var diff = (7 + (dt.DayOfWeek - DayOfWeek.Monday)) % 7;
+        return dt.AddDays(-diff).Date;
+    }
+
+    class DaySlot { public DateTime Date { get; set; } = DateTime.Today; public List<AppointmentViewModel> Appointments { get; set; } = new(); }
+    class MonthCell { public DateTime Date { get; set; } = DateTime.Today; public List<AppointmentViewModel> Appointments { get; set; } = new(); public bool IsCurrentMonth { get; set; } = true; }
+
+    private string GetStatusVariant(AppointmentStatus status) =>
+        status switch
+        {
+            AppointmentStatus.Completed => "success",
+            AppointmentStatus.Cancelled => "danger",
+            AppointmentStatus.NoShow => "danger",
+            _ => "info"
+        };
+}

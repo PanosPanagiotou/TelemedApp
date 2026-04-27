@@ -1,0 +1,79 @@
+﻿<button @onclick="HandleClick"
+        class="@BuildClasses()">
+
+    @if (IsLoading)
+    {
+        <span class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
+    }
+
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public Func<Task>? OnClick { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public string Variant { get; set; } = "primary";
+    [Parameter] public string Size { get; set; } = "md";
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool FullWidth { get; set; }
+
+    private bool IsLoading { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (OnClick is null || IsLoading || Disabled)
+            return;
+
+        try
+        {
+            IsLoading = true;
+            await OnClick.Invoke();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private string BuildClasses()
+    {
+        var baseClass =
+            "inline-flex items-center justify-center font-medium rounded-lg transition-all " +
+            "focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+
+        var sizeClass = Size switch
+        {
+            "sm" => "px-3 py-1.5 text-sm",
+            "lg" => "px-5 py-3 text-base",
+            _ => "px-4 py-2 text-sm"
+        };
+
+        var variantClass = Variant switch
+        {
+            "secondary" =>
+                "bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400 " +
+                "dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600",
+
+            "accent" =>
+                "bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500",
+
+            "danger" =>
+                "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+
+            "outline" =>
+                "border border-gray-300 text-gray-800 hover:bg-gray-100 " +
+                "dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700",
+
+            "ghost" =>
+                "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700",
+
+            _ => // primary
+                "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
+        };
+
+        var widthClass = FullWidth ? "w-full" : "";
+
+        return $"{baseClass} {sizeClass} {variantClass} {widthClass}".Trim();
+    }
+}

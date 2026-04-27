@@ -1,0 +1,43 @@
+﻿@using TelemedApp.Application.DTOs
+<div class="calendar-day-container">
+    <div class="flex items-center justify-between">
+        <div class="text-sm font-semibold">@Date.ToString("ddd dd")</div>
+        <div class="text-xs text-gray-400">@Date.ToString("MMM")</div>
+    </div>
+
+    <div class="mt-3 space-y-2">
+        @if (Appointments?.Any() == true)
+        {
+            @foreach (var ap in Appointments)
+            {
+                <AppointmentChip AppointmentDto="ap"
+                                 IsPast="IsPast"
+                                 OnClick="() => OnAppointmentClick.InvokeAsync(ap)" />
+            }
+        }
+        else
+        {
+            <div class="text-xs text-gray-500">No appointments</div>
+        }
+    </div>
+
+    <div class="mt-4">
+        @if (ShowBookButton)
+        {
+            <Button Variant="success" Size="sm" FullWidth="true"
+                    OnClick="() => OnBook.InvokeAsync(Date)">
+                Book
+            </Button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public DateTime Date { get; set; }
+    [Parameter] public IEnumerable<AppointmentDto>? Appointments { get; set; }
+    [Parameter] public bool ShowBookButton { get; set; }
+    [Parameter] public Func<DateTime, bool>? IsPast { get; set; }
+
+    [Parameter] public EventCallback<AppointmentDto> OnAppointmentClick { get; set; }
+    [Parameter] public EventCallback<DateTime> OnBook { get; set; }
+}
