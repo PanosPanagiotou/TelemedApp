@@ -15,7 +15,7 @@ namespace TelemedApp.Identity.Data
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
 
-            logger.LogInformation("🔐 Starting Identity seeding...");
+            logger.LogInformation("Starting Identity seeding...");
 
             // ---------------------------------------------------------
             // 1. Create roles
@@ -37,7 +37,7 @@ namespace TelemedApp.Identity.Data
                 if (!await roleManager.RoleExistsAsync(role))
                 {
                     await roleManager.CreateAsync(new ApplicationRole { Name = role });
-                    logger.LogInformation("✔ Created role: {Role}", role);
+                    logger.LogInformation("Created role: {Role}", role);
                 }
             }
 
@@ -56,7 +56,7 @@ namespace TelemedApp.Identity.Data
                     if (!existing.Any(c => c.Type == "permission" && c.Value == permission))
                     {
                         await roleManager.AddClaimAsync(r, new Claim("permission", permission));
-                        logger.LogInformation("✔ Added permission '{Permission}' to role '{Role}'", permission, role);
+                        logger.LogInformation("Added permission '{Permission}' to role '{Role}'", permission, role);
                     }
                 }
             }
@@ -113,16 +113,16 @@ namespace TelemedApp.Identity.Data
                         + string.Join(", ", result.Errors.Select(e => e.Description)));
                 }
 
-                logger.LogInformation("✔ Admin user created.");
+                logger.LogInformation("Admin user created.");
             }
 
             if (!await userManager.IsInRoleAsync(admin, "Admin"))
             {
                 await userManager.AddToRoleAsync(admin, "Admin");
-                logger.LogInformation("✔ Admin assigned to Admin role.");
+                logger.LogInformation("Admin assigned to Admin role.");
             }
 
-            logger.LogInformation("🎉 Identity seeding completed successfully.");
+            logger.LogInformation("Identity seeding completed successfully.");
         }
     }
 }
