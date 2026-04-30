@@ -10,6 +10,20 @@ This repository is designed as a **portfolio project** to highlight senior-level
 
 ---
 
+## What TelemedApp Does
+TelemedApp simulates the core building blocks of a real telemedicine system.
+It provides a simplified but realistic workflow for patients, doctors, and administrators, including:
+
+- patient and doctor profiles
+- appointment scheduling
+- basic medical record handling
+- authentication and role‑based access
+- structured domain logic for clinical operations
+
+The goal is not to deliver a full product, but to demonstrate how a healthcare‑oriented platform can be modeled using clean architecture, modular boundaries, and modern .NET practices.
+
+---
+
 ## Architecture  
 The solution follows a layered Clean Architecture approach:
 
