@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.14" />
 
-    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="AutoMapper" Version="15.1.4" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
   </ItemGroup>
 
